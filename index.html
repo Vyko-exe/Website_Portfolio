@@ -76,7 +76,7 @@
 
     /* ABOUT */
     #about{background:rgba(13,13,13,.55);display:grid;grid-template-columns:1fr 1fr}
-    .ab-left{position:relative;overflow:hidden;background:var(--dark2);border-right:1px solid var(--rule)}
+    .ab-left{position:relative;overflow:hidden;background:transparent}
     .ab-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
     .ab-ph-box{width:190px;height:250px;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;position:relative}
     .ab-ph-box::after{content:'';position:absolute;top:10px;left:10px;right:-10px;bottom:-10px;border:1px solid rgba(255,255,255,.03)}
@@ -100,7 +100,7 @@
     #contact{background:rgba(20,20,20,.55);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:96px 56px;position:relative}
     .ct-gh{position:absolute;right:0;top:50%;transform:translateY(-50%);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(9rem,17vw,17rem);color:rgba(255,255,255,.022);pointer-events:none;user-select:none;white-space:nowrap;line-height:1}
     .ct-eye{font-size:.56rem;letter-spacing:.38em;text-transform:uppercase;color:var(--mid);margin-bottom:28px}
-    .ct-h{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(2.8rem,6.5vw,5.8rem);line-height:1.06;color:var(--white);margin-bottom:48px;max-width:700px}
+    .ct-h{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.1;color:var(--white);margin-bottom:32px;max-width:700px}
     .ct-h em{font-style:italic;color:var(--mid)}
     .ct-mail{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1rem,2vw,1.5rem);color:var(--light);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:5px;transition:color .3s,border-color .3s;margin-bottom:52px;display:inline-block}
     .ct-mail:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
@@ -115,6 +115,7 @@
     .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s,transform .8s}
     .reveal.in{opacity:1;transform:none}
     .d1{transition-delay:.1s}.d2{transition-delay:.22s}.d3{transition-delay:.34s}.d4{transition-delay:.48s}
+    .ab-photo:hover{filter:grayscale(0%) contrast(1) !important}
 
 
   </style>
@@ -205,13 +206,17 @@
     <div style="padding:120px 64px 32px;border-bottom:1px solid var(--rule)">
       <p class="ct-eye reveal">About & Contact</p>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;flex:1">
-      <div class="ab-right" style="border-right:1px solid var(--rule)">
-        <h2 class="ab-h reveal d1"><span id="e-ab-h1">A passion for</span><br><em id="e-ab-h2">crafted worlds</em></h2>
-        <p class="ab-p reveal d2" id="e-about-p1">Hey ! I’m Victor Dalbin, also known as Vyko, a digital and traditional artist.
+    <div style="display:flex;flex:1">
+      <div style="flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:48px 48px 48px 96px">
+        <img class="ab-photo" src="images/photo-about/IMG_0031.JPG" style="width:420px;height:594px;object-fit:cover;object-position:center top;display:block;filter:grayscale(100%) contrast(1.05);transition:filter .6s ease">
+      </div>
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:64px;border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center">
+          <h2 class="ab-h reveal d1"><span id="e-ab-h1">A passion for</span><br><em id="e-ab-h2">crafted worlds</em></h2>
+          <p class="ab-p reveal d2" id="e-about-p1">Hey ! I’m Victor Dalbin, also known as Vyko, a digital and traditional artist.
 Passionate about drawing, illustration, and 3D, I enjoy experimenting with different techniques and continuing to learn through my artistic practice.<br><br>For me, art, in all its forms, is a way to express what I feel.
 It’s a suspended moment where my ideas take shape and where I feel fully present.</p>
-      </div>
+        </div>
       <div id="contact" style="display:flex;flex-direction:column;justify-content:center;padding:64px;position:relative">
         <h2 class="ct-h reveal d1"><span id="e-ct-h1">Let's create</span><br><em id="e-ct-h2">together.</em></h2>
         <a href="mailto:vykodraw@gmail.com" class="ct-mail reveal d2" id="e-email">vykodraw@gmail.com</a>
@@ -219,6 +224,7 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
           <li><a href="https://www.artstation.com/vyko" id="e-ct-soc1" target="_blank"><span id="e-ct-soc1-lbl">ArtStation</span></a></li>
           <li><a href="https://www.instagram.com/vykowrld" id="e-ct-soc2" target="_blank"><span id="e-ct-soc2-lbl">Instagram</span></a></li>
         </ul>
+      </div>
       </div>
     </div>
   </section>
