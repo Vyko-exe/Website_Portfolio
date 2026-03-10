@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital 2D — Victor Dalbin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
+    html,body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(13,13,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--rule)}
+    .n-logo{font-family:'Playfair Display',serif;font-weight:400;font-size:.95rem;letter-spacing:.05em;color:var(--white);text-decoration:none}
+    .n-links{display:flex;gap:40px;list-style:none}
+    .n-links a{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
+    .n-links a:hover,.n-links a.active{color:var(--white)}
+    .n-right{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mid)}
+
+    /* PAGE HEADER */
+    .page-header{padding:130px 56px 52px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:center;text-align:center}
+    .page-eyebrow{font-size:.5rem;letter-spacing:.4em;text-transform:uppercase;color:var(--mid);margin-bottom:18px;display:block}
+    .page-title{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(2.6rem,5.5vw,4.5rem);line-height:1;color:var(--white)}
+    .page-title em{font-style:italic;color:var(--mid)}
+
+    /* MAIN CONTENT */
+    .content{padding:0 56px 80px}
+
+    /* YEAR BLOCK */
+    .year-block{padding-top:52px}
+    .year-block + .year-block{border-top:1px solid var(--rule)}
+
+    .year-heading{
+      font-family:'Playfair Display',serif;
+      font-weight:400;
+      font-size:clamp(1.8rem,3.5vw,3rem);
+      color:rgba(255,255,255,.15);
+      margin-bottom:18px;
+      line-height:1;
+    }
+
+    /* THUMBNAIL STRIP — very close to reference */
+    .thumb-strip{
+      display:flex;
+      flex-wrap:wrap;
+      gap:3px;
+      align-items:flex-start;
+      padding-bottom:48px;
+    }
+
+    .thumb{
+      position:relative;
+      width:180px;
+      /* square */
+      height:180px;
+      overflow:hidden;
+      cursor:pointer;
+      background:var(--dark2);
+      flex-shrink:0;
+      transition:transform .3s cubic-bezier(.25,.46,.45,.94),box-shadow .3s;
+    }
+    .thumb:hover{
+      transform:scaleY(1.03) translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,.6);
+      z-index:2;
+    }
+
+    /* background image */
+    .thumb-img{
+      position:absolute;inset:0;
+      background-size:cover;
+      background-position:center top;
+      transition:transform .5s cubic-bezier(.25,.46,.45,.94);
+    }
+    .thumb:hover .thumb-img{transform:scale(1.06)}
+
+    /* placeholder */
+    .thumb-ph{
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(160deg,#1a1a1a 0%,#111 100%);
+    }
+    .thumb-ph::before{
+      content:'';position:absolute;
+      inset:0;
+      background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0,rgba(255,255,255,.4) 1px,transparent 0,transparent 50%);
+      background-size:6px 6px;
+      opacity:.025;
+    }
+    .thumb-ph-num{
+      font-family:'Playfair Display',serif;
+      font-style:italic;
+      font-size:1rem;
+      color:rgba(255,255,255,.1);
+    }
+
+    /* hover overlay */
+    .thumb-ov{
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 60%);
+      opacity:0;transition:opacity .25s;
+    }
+    .thumb:hover .thumb-ov{opacity:1}
+
+    /* title on hover */
+    .thumb-label{
+      position:absolute;bottom:5px;left:0;right:0;
+      text-align:center;
+      font-size:.38rem;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.8);
+      opacity:0;transform:translateY(3px);
+      transition:opacity .25s,transform .25s;
+      padding:0 3px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .thumb:hover .thumb-label{opacity:1;transform:translateY(0)}
+
+    /* LIGHTBOX */
+    #lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
+    #lightbox.open{display:flex}
+    #lb-img{max-width:88vw;max-height:90vh;object-fit:contain;opacity:0;transition:opacity .3s}
+    #lb-img.loaded{opacity:1}
+    .lb-ph-box{width:400px;height:400px;background:var(--dark2);display:flex;align-items:center;justify-content:center}
+    .lb-ph-box span{font-family:'Playfair Display',serif;font-style:italic;font-size:2.5rem;color:rgba(255,255,255,.07)}
+    #lb-close{position:absolute;top:22px;right:26px;background:none;border:none;color:var(--light);font-size:1.3rem;cursor:pointer;transition:color .2s;line-height:1}
+    #lb-close:hover{color:var(--white)}
+    #lb-prev,#lb-next{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.25);font-size:2.2rem;cursor:pointer;padding:18px;transition:color .2s}
+    #lb-prev{left:0}#lb-next{right:0}
+    #lb-prev:hover,#lb-next:hover{color:var(--white)}
+    #lb-meta{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);text-align:center}
+    #lb-meta-title{font-family:'Playfair Display',serif;font-style:italic;font-size:.9rem;color:var(--white);display:block}
+    #lb-meta-info{font-size:.44rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mid);margin-top:4px;display:block}
+
+    /* BACK */
+    .back-bar{padding:0 56px 60px}
+    .back-link{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s;display:inline-flex;align-items:center;gap:10px}
+    .back-link:hover{color:var(--white)}
+    .back-link::before{content:'←';font-size:.65rem}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(12px);transition:opacity .55s,transform .55s}
+    .reveal.in{opacity:1;transform:none}
+    .d1{transition-delay:.07s}.d2{transition-delay:.14s}.d3{transition-delay:.21s}
+
+    @media(max-width:768px){
+      nav{padding:0 20px}.n-right,.n-links li:last-child{display:none}.n-links{gap:16px}
+      .page-header{padding:90px 20px 36px;flex-direction:column;align-items:flex-start}.page-count{display:none}
+      .content{padding:0 20px 60px}
+      .thumb{width:120px;height:120px}
+      .back-bar{padding:0 20px 40px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox">
+    <button id="lb-close">✕</button>
+    <button id="lb-prev">‹</button>
+    <div id="lb-content"></div>
+    <button id="lb-next">›</button>
+    <div id="lb-meta">
+      <span id="lb-meta-title"></span>
+      <span id="lb-meta-info"></span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="n-logo">Victor Dalbin</a>
+    <ul class="n-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#works" class="active">Works</a></li>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+    <span class="n-right">Available for commissions</span>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <span class="page-eyebrow">Works — 01</span>
+      <h1 class="page-title">Digital <em>2D</em></h1>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 2025 -->
+    <div class="year-block reveal">
+      <h2 class="year-heading">2025</h2>
+      <div class="thumb-strip">
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">06</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">07</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">08</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+      </div>
+    </div>
+
+    <!-- 2024 -->
+    <div class="year-block reveal d1">
+      <h2 class="year-heading">2024</h2>
+      <div class="thumb-strip">
+        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+      </div>
+    </div>
+
+    <!-- 2023 -->
+    <div class="year-block reveal d2">
+      <h2 class="year-heading">2023</h2>
+      <div class="thumb-strip">
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2023"><div class="thumb-ph"><span class="thumb-ph-num">06</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+      </div>
+    </div>
+
+    <!-- 2022 -->
+    <div class="year-block reveal d3">
+      <h2 class="year-heading">2022</h2>
+      <div class="thumb-strip">
+        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BACK -->
+  <div class="back-bar">
+    <a href="index.html#works" class="back-link">Back to Works</a>
+  </div>
+
+  <script>
+    // Reveal on scroll
+    const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.05});
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // Lightbox
+    const lb      = document.getElementById('lightbox');
+    const lbCont  = document.getElementById('lb-content');
+    const lbTitle = document.getElementById('lb-meta-title');
+    const lbInfo  = document.getElementById('lb-meta-info');
+    let current = 0;
+    const all = () => [...document.querySelectorAll('.thumb')];
+
+    function open(i) {
+      const thumbs = all();
+      if (!thumbs[i]) return;
+      current = i;
+      const t = thumbs[i];
+      const imgEl = t.querySelector('.thumb-img');
+      const src = imgEl ? imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
+      lbTitle.textContent = t.dataset.title || '';
+      lbInfo.textContent  = (t.dataset.year||'') + '   ·   ' + (i+1) + ' / ' + thumbs.length;
+      lbCont.innerHTML = '';
+      if (src) {
+        const img = document.createElement('img');
+        img.id = 'lb-img';
+        img.src = src;
+        img.onload = () => img.classList.add('loaded');
+        lbCont.appendChild(img);
+      } else {
+        const box = document.createElement('div');
+        box.className = 'lb-ph-box';
+        const num = t.querySelector('.thumb-ph-num');
+        box.innerHTML = '<span>'+(num?num.textContent:(i+1))+'</span>';
+        lbCont.appendChild(box);
+      }
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+
+    all().forEach((t,i) => t.addEventListener('click', () => open(i)));
+    document.getElementById('lb-close').addEventListener('click', close);
+    lb.addEventListener('click', e => { if(e.target === lb) close(); });
+    document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); const n=all().length; open((current-1+n)%n); });
+    document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); open((current+1)%all().length); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key==='Escape') close();
+      if (e.key==='ArrowLeft')  { const n=all().length; open((current-1+n)%n); }
+      if (e.key==='ArrowRight') open((current+1)%all().length);
+    });
+  </script>
+</body>
+</html>
