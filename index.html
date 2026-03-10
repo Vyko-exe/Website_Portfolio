@@ -7,28 +7,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
   <style>
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;cursor:none}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
     html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
-    body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden;cursor:none}
-    #cursor-dot{position:fixed;top:0;left:0;width:3px;height:3px;background:var(--white);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:opacity .3s}
-    #cursor-diamond{position:fixed;top:0;left:0;width:20px;height:20px;border:1px solid rgba(255,255,255,.6);pointer-events:none;z-index:9998;transform:translate(-50%,-50%) rotate(45deg);transition:width .2s,height .2s,border-color .2s}
-    a:hover ~ #cursor-diamond, button:hover ~ #cursor-diamond{width:32px;height:32px}
+    body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
     #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:1}
 
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(13,13,13,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--rule)}
     .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:0.85rem;letter-spacing:.02em;color:var(--white);text-decoration:none;margin-top:10px;display:inline-block}
     .n-links{display:flex;gap:40px;list-style:none;position:absolute;left:50%;transform:translateX(-50%)}
-    .n-links a{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
-    .n-links a:hover{color:var(--white)}
+    .n-links a{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s,transform .2s;display:inline-block}
+    .n-links a:hover{color:var(--white);transform:scale(1.08)}
     .n-drop{position:relative}
     .n-drop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-6px);padding-top:12px;background:transparent;min-width:160px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
     .n-drop-menu::before{content:'';position:absolute;top:12px;left:0;right:0;bottom:0;background:rgba(13,13,13,.97);border:1px solid var(--rule);backdrop-filter:blur(16px);z-index:-1}
     .n-drop-menu a{position:relative;display:block;padding:9px 20px}
     .n-drop:hover .n-drop-menu{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
     .n-drop-menu a{font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s,background .2s}
-    .n-drop-menu a:hover{color:var(--white);background:rgba(255,255,255,.04)}
+    .n-drop-menu a:hover{color:var(--white);background:rgba(255,255,255,.04);transform:none}
     .n-right{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mid)}
     section{min-height:100vh;scroll-snap-align:start;position:relative;overflow:hidden}
 
@@ -125,8 +122,6 @@
 <body>
 
   <canvas id="bg-canvas"></canvas>
-  <div id="cursor-dot"></div>
-  <div id="cursor-diamond"></div>
 
 
 
@@ -422,23 +417,6 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
     const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.1});
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-    // CUSTOM CURSOR
-    const dot = document.getElementById('cursor-dot');
-    const diamond = document.getElementById('cursor-diamond');
-    let dx = 0, dy = 0;
-    document.addEventListener('mousemove', e => {
-      dot.style.left = e.clientX + 'px';
-      dot.style.top  = e.clientY + 'px';
-      dx += (e.clientX - dx) * 0.12;
-      dy += (e.clientY - dy) * 0.12;
-      diamond.style.left = dx + 'px';
-      diamond.style.top  = dy + 'px';
-    });
-    (function loop(){ dx += (parseFloat(dot.style.left||0) - dx)*.12; dy += (parseFloat(dot.style.top||0) - dy)*.12; diamond.style.left=dx+'px'; diamond.style.top=dy+'px'; requestAnimationFrame(loop); })();
-    document.querySelectorAll('a,button').forEach(el => {
-      el.addEventListener('mouseenter', () => { diamond.style.width='32px'; diamond.style.height='32px'; diamond.style.borderColor='rgba(255,255,255,1)'; });
-      el.addEventListener('mouseleave', () => { diamond.style.width='20px'; diamond.style.height='20px'; diamond.style.borderColor='rgba(255,255,255,.6)'; });
-    });
 
   </script>
 </body>
