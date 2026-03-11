@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(magick --version)",
+      "Bash(ffmpeg -version)",
+      "Bash(xargs -I{} du -h C:/Users/victo/Desktop/Website/images/Digital2d/2025/{})",
+      "Bash(where node:*)",
+      "Bash(where npm:*)",
+      "Bash(powershell.exe -Command \"Get-Command node,npm,magick,ffmpeg -ErrorAction SilentlyContinue | Select-Object Name,Source\")",
+      "Bash(powershell -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object Source\")",
+      "Bash(cmd /c \"where node & where magick & where ffmpeg\")",
+      "Bash(cmd /c \"node --version\")",
+      "Bash(cmd /c \"magick --version\")"
+    ]
+  }
+}

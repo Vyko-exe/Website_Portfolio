@@ -4,25 +4,50 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Digital 2D — Victor Dalbin</title>
+  <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
     html,body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
+    body::before{
+      content:'';position:fixed;inset:-30%;z-index:0;pointer-events:none;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(80,40,160,.20) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(30,80,180,.16) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 60% 15%, rgba(140,30,110,.13) 0%, transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(20,60,120,.15) 0%, transparent 70%);
+      animation:nebula-drift 20s ease-in-out infinite alternate;
+    }
+    @keyframes nebula-drift{
+      0%  {transform:translate(0,0) scale(1)}
+      33% {transform:translate(2%,1.5%) scale(1.02)}
+      66% {transform:translate(-1.5%,2%) scale(1.01)}
+      100%{transform:translate(1%,-1%) scale(1.03)}
+    }
+    nav,#lightbox,.page-header,.content,.back-bar,#reorder-bar{position:relative;z-index:1}
 
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(13,13,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--rule)}
-    .n-logo{font-family:'Playfair Display',serif;font-weight:400;font-size:.95rem;letter-spacing:.05em;color:var(--white);text-decoration:none}
-    .n-links{display:flex;gap:40px;list-style:none}
+    .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:.85rem;letter-spacing:.02em;color:var(--white);text-decoration:none;margin-top:10px;display:inline-block}
+    .n-links{display:flex;gap:40px;list-style:none;position:absolute;left:50%;transform:translateX(-50%)}
     .n-links a{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
     .n-links a:hover,.n-links a.active{color:var(--white)}
     .n-right{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mid)}
+    .n-drop{position:relative}
+    .n-drop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-6px);padding-top:12px;background:transparent;min-width:160px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+    .n-drop-menu::before{content:'';position:absolute;top:12px;left:0;right:0;bottom:0;background:rgba(13,13,13,.97);border:1px solid var(--rule);backdrop-filter:blur(16px);z-index:-1}
+    .n-drop-menu a{position:relative;display:block;padding:9px 20px;font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s,background .2s}
+    .n-drop-menu a:hover{color:var(--white);background:rgba(255,255,255,.04)}
+    .n-drop:hover .n-drop-menu{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
 
     /* PAGE HEADER */
     .page-header{padding:130px 56px 52px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:center;text-align:center}
     .page-eyebrow{font-size:.5rem;letter-spacing:.4em;text-transform:uppercase;color:var(--mid);margin-bottom:18px;display:block}
-    .page-title{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(2.6rem,5.5vw,4.5rem);line-height:1;color:var(--white)}
-    .page-title em{font-style:italic;color:var(--mid)}
+    .page-title{font-family:'Tenor Sans',sans-serif;font-weight:300;font-size:clamp(2.6rem,5.5vw,4.5rem);line-height:1.1;color:var(--white);letter-spacing:.04em}
+    .page-title em{font-style:normal;color:var(--mid)}
 
     /* MAIN CONTENT */
     .content{padding:0 56px 80px}
@@ -44,25 +69,26 @@
     .thumb-strip{
       display:flex;
       flex-wrap:wrap;
-      gap:3px;
+      gap:8px;
       align-items:flex-start;
       padding-bottom:48px;
     }
 
     .thumb{
       position:relative;
-      width:180px;
-      /* square */
-      height:180px;
+      width:220px;
+      height:300px;
       overflow:hidden;
       cursor:pointer;
       background:var(--dark2);
       flex-shrink:0;
       transition:transform .3s cubic-bezier(.25,.46,.45,.94),box-shadow .3s;
+      will-change:transform;
+      transform:translateZ(0);
     }
     .thumb:hover{
-      transform:scaleY(1.03) translateY(-2px);
-      box-shadow:0 8px 24px rgba(0,0,0,.6);
+      transform:translateY(-4px);
+      box-shadow:0 12px 32px rgba(0,0,0,.7);
       z-index:2;
     }
 
@@ -72,6 +98,8 @@
       background-size:cover;
       background-position:center top;
       transition:transform .5s cubic-bezier(.25,.46,.45,.94);
+      will-change:transform;
+      transform:translateZ(0);
     }
     .thumb:hover .thumb-img{transform:scale(1.06)}
 
@@ -98,23 +126,28 @@
     /* hover overlay */
     .thumb-ov{
       position:absolute;inset:0;
-      background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 60%);
-      opacity:0;transition:opacity .25s;
+      background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);
+      opacity:0;transition:opacity .3s;
     }
     .thumb:hover .thumb-ov{opacity:1}
 
     /* title on hover */
     .thumb-label{
-      position:absolute;bottom:5px;left:0;right:0;
-      text-align:center;
-      font-size:.38rem;
-      letter-spacing:.1em;
+      position:absolute;
+      bottom:0;left:0;right:0;
+      padding:10px 10px 8px;
+      font-size:.48rem;
+      letter-spacing:.2em;
       text-transform:uppercase;
-      color:rgba(255,255,255,.8);
-      opacity:0;transform:translateY(3px);
-      transition:opacity .25s,transform .25s;
-      padding:0 3px;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      color:rgba(255,255,255,.9);
+      opacity:0;transform:translateY(4px);
+      transition:opacity .3s,transform .3s;
+    }
+    .thumb-label::before{
+      content:'';display:block;
+      width:14px;height:1px;
+      background:rgba(255,255,255,.6);
+      margin-bottom:5px;
     }
     .thumb:hover .thumb-label{opacity:1;transform:translateY(0)}
 
@@ -172,10 +205,16 @@
   <nav>
     <a href="index.html" class="n-logo">Victor Dalbin</a>
     <ul class="n-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="index.html#works" class="active">Works</a></li>
-      <li><a href="index.html#about">About</a></li>
-      <li><a href="index.html#contact">Contact</a></li>
+      <li><a href="index.html#hero">Home</a></li>
+      <li class="n-drop">
+        <a href="index.html#works" class="active">Works</a>
+        <div class="n-drop-menu">
+          <a href="digital-2d.html">Digital 2D</a>
+          <a href="digital-3d.html">Digital 3D</a>
+          <a href="traditional.html">Traditional</a>
+        </div>
+      </li>
+      <li><a href="index.html#about">About & Contact</a></li>
     </ul>
     <span class="n-right">Available for commissions</span>
   </nav>
@@ -183,8 +222,7 @@
   <!-- HEADER -->
   <div class="page-header">
     <div>
-      <span class="page-eyebrow">Works — 01</span>
-      <h1 class="page-title">Digital <em>2D</em></h1>
+<h1 class="page-title">Digital <em>2D</em></h1>
     </div>
   </div>
 
@@ -194,14 +232,20 @@
     <div class="year-block reveal">
       <h2 class="year-heading">2025</h2>
       <div class="thumb-strip">
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">06</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">07</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2025"><div class="thumb-ph"><span class="thumb-ph-num">08</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="1" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/1.png"></div><div class="thumb-ov"></div><span class="thumb-label">1</span></div>
+        <div class="thumb" data-title="2" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/2.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">2</span></div>
+        <div class="thumb" data-title="3" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/3.png"></div><div class="thumb-ov"></div><span class="thumb-label">3</span></div>
+        <div class="thumb" data-title="02" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/02.png"></div><div class="thumb-ov"></div><span class="thumb-label">02</span></div>
+        <div class="thumb" data-title="03" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/03.png"></div><div class="thumb-ov"></div><span class="thumb-label">03</span></div>
+        <div class="thumb" data-title="10" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/10.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">10</span></div>
+        <div class="thumb" data-title="11" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/11.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">11</span></div>
+        <div class="thumb" data-title="Eveil sous les Plumes" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/Eveil sous les Plumes.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Eveil sous les Plumes</span></div>
+        <div class="thumb" data-title="del6" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/del6.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">del6</span></div>
+        <div class="thumb" data-title="Illu Impro 2" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/Illu_Impro_2.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Illu Impro 2</span></div>
+        <div class="thumb" data-title="kazuya" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/kazuya.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">kazuya</span></div>
+        <div class="thumb" data-title="Astraë" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/Astraë.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Astraë</span></div>
+        <div class="thumb" data-title="yeah" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/yeah.png"></div><div class="thumb-ov"></div><span class="thumb-label">yeah</span></div>
+        <div class="thumb" data-title="Portrait Flowers" data-year="2025"><div class="thumb-img" data-bg="images/Digital2d/2025/PortraitFlowers.png"></div><div class="thumb-ov"></div><span class="thumb-label">Portrait Flowers</span></div>
       </div>
     </div>
 
@@ -209,11 +253,19 @@
     <div class="year-block reveal d1">
       <h2 class="year-heading">2024</h2>
       <div class="thumb-strip">
-        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2024"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
+        <div class="thumb" data-title="1" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/1.png"></div><div class="thumb-ov"></div><span class="thumb-label">1</span></div>
+        <div class="thumb" data-title="2" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/2.png"></div><div class="thumb-ov"></div><span class="thumb-label">2</span></div>
+        <div class="thumb" data-title="3" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/3.png"></div><div class="thumb-ov"></div><span class="thumb-label">3</span></div>
+        <div class="thumb" data-title="4" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/4.png"></div><div class="thumb-ov"></div><span class="thumb-label">4</span></div>
+        <div class="thumb" data-title="Dune" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/Dune.png"></div><div class="thumb-ov"></div><span class="thumb-label">Dune</span></div>
+        <div class="thumb" data-title="Fallout" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/Fallout.png"></div><div class="thumb-ov"></div><span class="thumb-label">Fallout</span></div>
+        <div class="thumb" data-title="Horse" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/Horse.png"></div><div class="thumb-ov"></div><span class="thumb-label">Horse</span></div>
+        <div class="thumb" data-title="Mixer Sky" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/mixersky.png"></div><div class="thumb-ov"></div><span class="thumb-label">Mixer Sky</span></div>
+        <div class="thumb" data-title="Mullins Study" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/mullinsstudy.png"></div><div class="thumb-ov"></div><span class="thumb-label">Mullins Study</span></div>
+        <div class="thumb" data-title="Psyche" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/psyche.png"></div><div class="thumb-ov"></div><span class="thumb-label">Psyche</span></div>
+        <div class="thumb" data-title="View" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/View.png"></div><div class="thumb-ov"></div><span class="thumb-label">View</span></div>
+        <div class="thumb" data-title="Cloud 1" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/cloud1.png"></div><div class="thumb-ov"></div><span class="thumb-label">Cloud 1</span></div>
+        <div class="thumb" data-title="Wolves" data-year="2024"><div class="thumb-img" data-bg="images/Digital2d/2024/Wolves.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Wolves</span></div>
       </div>
     </div>
 
@@ -230,17 +282,6 @@
       </div>
     </div>
 
-    <!-- 2022 -->
-    <div class="year-block reveal d3">
-      <h2 class="year-heading">2022</h2>
-      <div class="thumb-strip">
-        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">01</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">02</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">03</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">04</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-        <div class="thumb" data-title="Untitled" data-year="2022"><div class="thumb-ph"><span class="thumb-ph-num">05</span></div><div class="thumb-img"></div><div class="thumb-ov"></div><span class="thumb-label">Untitled</span></div>
-      </div>
-    </div>
 
   </div><!-- /content -->
 
@@ -249,7 +290,176 @@
     <a href="index.html#works" class="back-link">Back to Works</a>
   </div>
 
+  <!-- REORDER BAR -->
+  <div id="reorder-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(20,20,20,.97);border-top:1px solid rgba(255,255,255,.1);padding:12px 56px;align-items:center;justify-content:space-between;gap:16px">
+    <span style="font-size:.48rem;letter-spacing:.25em;text-transform:uppercase;color:#a0a0a0">Mode réorganisation — glisse les cases</span>
+    <div style="display:flex;gap:10px">
+      <button id="reorder-save" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Sauvegarder dans le fichier</button>
+      <button id="reorder-exit" style="background:none;border:1px solid rgba(255,255,255,.2);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Quitter (CTRL+*)</button>
+    </div>
+  </div>
+
   <script>
+    // REORDER MODE
+    let reorderActive = false;
+    let dragSrc = null;
+    const reorderBar = document.getElementById('reorder-bar');
+
+    function enterReorder() {
+      reorderActive = true;
+      reorderBar.style.display = 'flex';
+      document.body.style.paddingBottom = '60px';
+      document.querySelectorAll('.thumb').forEach(t => {
+        t.draggable = true;
+        t.style.cursor = 'grab';
+        t.style.outline = '1px dashed rgba(255,255,255,.2)';
+        t.addEventListener('dragstart', onDragStart);
+        t.addEventListener('dragover', onDragOver);
+        t.addEventListener('drop', onDrop);
+        t.addEventListener('dragend', onDragEnd);
+      });
+    }
+
+    function exitReorder() {
+      reorderActive = false;
+      reorderBar.style.display = 'none';
+      document.body.style.paddingBottom = '';
+      document.querySelectorAll('.thumb').forEach(t => {
+        t.draggable = false;
+        t.style.cursor = '';
+        t.style.outline = '';
+        t.removeEventListener('dragstart', onDragStart);
+        t.removeEventListener('dragover', onDragOver);
+        t.removeEventListener('drop', onDrop);
+        t.removeEventListener('dragend', onDragEnd);
+      });
+    }
+
+    function onDragStart(e) { dragSrc = this; this.style.opacity = '.4'; }
+    function onDragEnd() { this.style.opacity = ''; document.querySelectorAll('.thumb').forEach(t => t.style.outline = '1px dashed rgba(255,255,255,.2)'); }
+    function onDragOver(e) { e.preventDefault(); this.style.outline = '1px solid rgba(255,255,255,.6)'; }
+    function onDrop(e) {
+      e.preventDefault();
+      if (dragSrc === this) return;
+      const strip = this.parentNode;
+      const thumbs = [...strip.children];
+      const srcIdx = thumbs.indexOf(dragSrc);
+      const tgtIdx = thumbs.indexOf(this);
+      if (srcIdx < tgtIdx) strip.insertBefore(dragSrc, this.nextSibling);
+      else strip.insertBefore(dragSrc, this);
+      saveOrder();
+    }
+
+    function saveOrder() {
+      const order = {};
+      document.querySelectorAll('.thumb-strip').forEach((strip, si) => {
+        order[si] = [...strip.querySelectorAll('.thumb')].map(t => {
+          const img = t.querySelector('.thumb-img');
+          return img ? (img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'')) : '';
+        });
+      });
+      localStorage.setItem('thumbOrder', JSON.stringify(order));
+    }
+
+    function restoreOrder() {
+      const saved = localStorage.getItem('thumbOrder');
+      if (!saved) return;
+      const order = JSON.parse(saved);
+      document.querySelectorAll('.thumb-strip').forEach((strip, si) => {
+        if (!order[si]) return;
+        order[si].forEach(src => {
+          const thumb = [...strip.querySelectorAll('.thumb')].find(t => {
+            const img = t.querySelector('.thumb-img');
+            return img && (img.dataset.bg === src || img.style.backgroundImage.includes(src));
+          });
+          if (thumb) strip.appendChild(thumb);
+        });
+      });
+    }
+    requestAnimationFrame(restoreOrder);
+
+    function thumbHTML(thumb) {
+      const clone = thumb.cloneNode(true);
+      const img = clone.querySelector('.thumb-img');
+      if (img) {
+        const src = img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'');
+        if (src) { img.dataset.bg = src; img.removeAttribute('style'); }
+      }
+      // Remove reorder inline styles
+      clone.removeAttribute('draggable');
+      clone.style.cssText = '';
+      return clone.outerHTML;
+    }
+
+    async function saveToFile() {
+      const btn = document.getElementById('reorder-save');
+      btn.textContent = 'Ouverture...';
+      try {
+        // Always re-pick to ensure write permission
+        let fh;
+        try { [fh] = await window.showOpenFilePicker({ types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }] }); }
+        catch(e) { btn.textContent = 'Sauvegarder dans le fichier'; return; }
+
+        // Request write permission explicitly
+        const perm = await fh.requestPermission({ mode: 'readwrite' }).catch(() => 'granted');
+        if (perm !== 'granted') { btn.textContent = 'Permission refusée'; setTimeout(() => btn.textContent = 'Sauvegarder dans le fichier', 2000); return; }
+
+        let content = await (await fh.getFile()).text();
+
+        document.querySelectorAll('.year-block').forEach(block => {
+          const year = block.querySelector('.year-heading').textContent.trim();
+          const strip = block.querySelector('.thumb-strip');
+          const newInner = '\n' + [...strip.querySelectorAll('.thumb')].map(t => '        ' + thumbHTML(t)).join('\n') + '\n      ';
+          const marker = '<!-- ' + year + ' -->';
+          const mi = content.indexOf(marker);
+          if (mi === -1) return;
+          const so = content.indexOf('<div class="thumb-strip">', mi);
+          if (so === -1) return;
+          const is = content.indexOf('>', so) + 1;
+          let depth = 1, i = is;
+          while (i < content.length && depth > 0) {
+            if (content[i] === '<') {
+              if (content.startsWith('<div', i)) depth++;
+              else if (content.startsWith('</div>', i)) { if (--depth === 0) break; }
+            }
+            i++;
+          }
+          content = content.slice(0, is) + newInner + content.slice(i);
+        });
+
+        const w = await fh.createWritable();
+        await w.write(content);
+        await w.close();
+        btn.textContent = 'Sauvegardé !';
+        setTimeout(() => btn.textContent = 'Sauvegarder dans le fichier', 2000);
+      } catch(e) {
+        btn.textContent = 'Erreur: ' + e.message;
+        setTimeout(() => btn.textContent = 'Sauvegarder dans le fichier', 3000);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === '*') { reorderActive ? exitReorder() : enterReorder(); }
+    });
+    document.getElementById('reorder-exit').addEventListener('click', exitReorder);
+    document.getElementById('reorder-save').addEventListener('click', saveToFile);
+
+    // Remove thumbs with no image
+    document.querySelectorAll('.thumb').forEach(t => {
+      const img = t.querySelector('.thumb-img');
+      if (!img || (!img.dataset.bg && !img.style.backgroundImage)) t.remove();
+    });
+
+    // Lazy load background images
+    const lazyObs = new IntersectionObserver(e => e.forEach(x => {
+      if (x.isIntersecting) {
+        const el = x.target;
+        if (el.dataset.bg) { el.style.backgroundImage = "url('"+el.dataset.bg+"')"; delete el.dataset.bg; }
+        lazyObs.unobserve(el);
+      }
+    }), {rootMargin:'200px'});
+    document.querySelectorAll('.thumb-img[data-bg]').forEach(el => lazyObs.observe(el));
+
     // Reveal on scroll
     const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.05});
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
@@ -270,7 +480,7 @@
       const imgEl = t.querySelector('.thumb-img');
       const src = imgEl ? imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
       lbTitle.textContent = t.dataset.title || '';
-      lbInfo.textContent  = (t.dataset.year||'') + '   ·   ' + (i+1) + ' / ' + thumbs.length;
+      lbInfo.textContent  = t.dataset.year || '';
       lbCont.innerHTML = '';
       if (src) {
         const img = document.createElement('img');
@@ -291,7 +501,7 @@
 
     function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
 
-    all().forEach((t,i) => t.addEventListener('click', () => open(i)));
+    all().forEach((t) => t.addEventListener('click', () => open(all().indexOf(t))));
     document.getElementById('lb-close').addEventListener('click', close);
     lb.addEventListener('click', e => { if(e.target === lb) close(); });
     document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); const n=all().length; open((current-1+n)%n); });
