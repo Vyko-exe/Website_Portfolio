@@ -495,11 +495,24 @@
         box.innerHTML = '<span>'+(num?num.textContent:(i+1))+'</span>';
         lbCont.appendChild(box);
       }
+      if (!lb.classList.contains('open')) history.pushState({lb:true}, '');
       lb.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
 
-    function close() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+    function close() {
+      if (!lb.classList.contains('open')) return;
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+      history.back();
+    }
+
+    window.addEventListener('popstate', () => {
+      if (lb.classList.contains('open')) {
+        lb.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
 
     all().forEach((t) => t.addEventListener('click', () => open(all().indexOf(t))));
     document.getElementById('lb-close').addEventListener('click', close);
