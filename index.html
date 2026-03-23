@@ -149,6 +149,62 @@
     }
     .ab-photo:hover{filter:grayscale(0%) contrast(1) !important}
 
+    /* BURGER (desktop: hidden) */
+    .n-burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:201}
+    .n-burger span{display:block;width:22px;height:1px;background:var(--white);transition:transform .3s,opacity .3s}
+    .n-burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .n-burger.open span:nth-child(2){opacity:0}
+    .n-burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* MOBILE MENU (desktop: hidden) */
+    .n-mobile-menu{display:none;position:fixed;inset:64px 0 0 0;background:rgba(13,13,13,.97);backdrop-filter:blur(16px);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+    .n-mobile-menu.open{display:flex}
+    .n-mob-link{font-size:.75rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
+    .n-mob-link:hover,.n-mob-link:active{color:var(--white)}
+    .n-mobile-sub{display:flex;flex-direction:column;align-items:center;gap:14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:18px 0;width:70%}
+    .n-mobile-sub a{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
+    .n-mobile-sub a:hover,.n-mobile-sub a:active{color:var(--white)}
+
+    @media(max-width:768px){
+      /* NAV */
+      nav{padding:0 20px}
+      .n-links,.n-right{display:none}
+      .n-burger{display:flex}
+
+      /* SCROLL SNAP off on mobile */
+      html{scroll-snap-type:none}
+      section{scroll-snap-align:none;min-height:auto}
+      #hero{min-height:100svh;padding:80px 24px 60px}
+
+      /* HERO */
+      .h-cta{flex-direction:column;align-items:center;gap:10px}
+      .h-sep{display:none}
+      h1.h-name em{margin-top:20px}
+
+      /* WORKS */
+      #works{padding:56px 20px 40px}
+      .cat-grid{grid-template-columns:1fr;gap:8px}
+      .cat-card{aspect-ratio:16/9}
+      .cat-bgn{display:none}
+      .cat-bot{transform:none !important}
+      .cat-line{width:36px !important}
+      .cat-sub{opacity:1 !important;transform:none !important}
+
+      /* ABOUT — override inline styles */
+      #about>div:first-child{padding:56px 20px 20px !important}
+      #about>div:last-child{flex-direction:column !important}
+      #about>div:last-child>div:first-child{padding:32px 20px !important}
+      .ab-photo{width:100% !important;height:auto !important;max-width:300px}
+      #about>div:last-child>div:last-child{grid-template-columns:1fr !important;display:flex !important;flex-direction:column !important}
+      #about>div:last-child>div:last-child>div:first-child{padding:36px 20px !important;border-right:none !important;border-bottom:1px solid var(--rule) !important}
+      #contact{padding:36px 20px 56px !important}
+      .ct-gh{display:none}
+      .ab-stats{grid-template-columns:1fr !important}
+      .st+.st{border-left:none !important;border-top:1px solid var(--rule);padding-left:0 !important;padding-top:14px;margin-top:14px}
+
+      /* FOOTER */
+      footer{padding:16px 20px;flex-direction:column;gap:6px;text-align:center}
+    }
 
   </style>
 </head>
@@ -174,7 +230,20 @@
       <li><a href="#about">About & Contact</a></li>
     </ul>
     <span class="n-right" id="e-navright">Available for commissions</span>
+    <button class="n-burger" aria-label="Menu"><span></span><span></span><span></span></button>
   </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="n-mobile-menu">
+    <a href="#hero" class="n-mob-link">Home</a>
+    <div class="n-mobile-sub">
+      <a href="#works" class="n-mob-link">Works</a>
+      <a href="digital-2d.html">Digital 2D</a>
+      <a href="digital-3d.html">Digital 3D</a>
+      <a href="traditional.html">Traditional</a>
+    </div>
+    <a href="#about" class="n-mob-link">About &amp; Contact</a>
+  </div>
 
   <!-- HERO -->
   <section id="hero">
@@ -458,6 +527,21 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
     const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.1});
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
+    // BURGER MENU
+    const burger = document.querySelector('.n-burger');
+    const mobileMenu = document.querySelector('.n-mobile-menu');
+    burger.addEventListener('click', () => {
+      burger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+    document.querySelectorAll('.n-mob-link, .n-mobile-sub a').forEach(a => {
+      a.addEventListener('click', () => {
+        burger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
 
   </script>
 </body>
