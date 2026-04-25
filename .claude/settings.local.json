@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:forticheprod.com)",
+      "Bash(git checkout *)"
+    ]
+  }
+}
