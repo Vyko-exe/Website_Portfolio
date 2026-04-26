@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Victor Dalbin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="icon" type="image/png" href="Favicon.png"/>
   <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
   <style>
@@ -34,9 +34,10 @@
     #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
 
     /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:.6rem 3rem;display:flex;align-items:center;justify-content:space-between;transition:padding .4s,background .4s,border-color .4s;border-bottom:1px solid transparent}
-    nav.stuck{padding:.4rem 3rem;background:rgba(13,13,13,.78);backdrop-filter:blur(14px);border-color:var(--rule)}
-    .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:1rem;letter-spacing:.02em;color:var(--white);text-decoration:none;display:inline-block;margin-top:6px}
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:1.6rem 4rem;display:flex;align-items:center;justify-content:space-between;transition:padding .4s,background .4s,border-color .4s;border-bottom:1px solid transparent}
+    nav.stuck{padding:1rem 4rem;background:rgba(13,13,13,.78);backdrop-filter:blur(14px);border-color:var(--rule)}
+    .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:1rem;letter-spacing:.02em;color:var(--white);text-decoration:none;display:inline-block;margin-top:6px;opacity:0;transition:opacity .4s ease}
+    nav.stuck .n-logo{opacity:1}
     .n-logo em{font-style:normal;color:var(--mid)}
     .n-links{display:flex;gap:2.8rem;list-style:none;align-items:center}
     .n-links a{font-family:'Tenor Sans',sans-serif;font-size:.58rem;font-weight:400;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,232,232,.45);text-decoration:none;transition:color .3s;position:relative}
@@ -68,7 +69,7 @@
     .btn-w:hover{background:var(--white);color:var(--black)}
     .btn-g{border-color:rgba(255,255,255,.18);color:var(--mid);background:transparent}
     .btn-g:hover{border-color:var(--mid);color:var(--white)}
-    .h-ghost{position:absolute;right:2rem;bottom:3rem;font-family:'Rockybilly',serif;font-size:clamp(7rem,11vw,14rem);font-weight:400;color:rgba(232,232,232,.05);line-height:1;pointer-events:none;user-select:none;white-space:nowrap;z-index:1}
+    .h-ghost{position:absolute;right:2rem;bottom:5rem;font-family:'Rockybilly',serif;font-size:clamp(7rem,11vw,14rem);font-weight:400;color:rgba(232,232,232,.05);line-height:1;pointer-events:none;user-select:none;white-space:nowrap;z-index:1}
     .h-scroll{position:absolute;bottom:36px;right:56px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mid);opacity:0;animation:fadein .8s ease 1.4s forwards}
     .h-scroll-line{width:1px;height:56px;background:var(--rule);position:relative;overflow:hidden}
     .h-scroll-line::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--light);animation:sp 2s ease-in-out 1.8s infinite}
@@ -81,7 +82,7 @@
 
     /* REEL */
     .reel-section{margin-top:52px}
-    .reel-inner{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;width:min(2400px,100%);margin:0 auto;background:#000}
+    .reel-inner{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;width:min(2000px,100%);margin:0 auto;background:#000}
     .reel-thumb{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%);transition:transform .8s cubic-bezier(.16,1,.3,1),filter .6s,opacity .4s}
     .reel-inner:hover .reel-thumb{transform:scale(1.03);filter:grayscale(0%)}
     .reel-inner.playing .reel-thumb{opacity:0;pointer-events:none}
@@ -89,13 +90,13 @@
     .reel-inner.playing .reel-vignette{opacity:0}
     .reel-label{position:absolute;top:1.4rem;left:50%;transform:translateX(-50%);font-family:'Rockybilly',serif;font-size:clamp(.9rem,1.6vw,1.2rem);color:rgba(232,232,232,.8);white-space:nowrap;letter-spacing:.04em;text-shadow:0 2px 16px rgba(0,0,0,.6);transition:opacity .4s;pointer-events:none}
     .reel-inner.playing .reel-label{opacity:0}
-    .reel-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Rockybilly',serif;font-size:clamp(1.8rem,3vw,2.6rem);letter-spacing:.06em;color:rgba(232,232,232,.7);text-shadow:0 2px 20px rgba(0,0,0,.6);white-space:nowrap;transition:color .35s,opacity .4s;cursor:none}
+    .reel-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Rockybilly',serif;font-size:clamp(1.8rem,3vw,2.6rem);letter-spacing:.06em;color:rgba(232,232,232,.7);text-shadow:0 2px 20px rgba(0,0,0,.6);white-space:nowrap;transition:color .35s,opacity 1s;cursor:none}
     .reel-play:hover{color:var(--white)}
     .reel-inner.playing .reel-play{opacity:0;pointer-events:none}
-    .reel-play-a{display:block;text-align:center;transition:transform .45s cubic-bezier(.16,1,.3,1),opacity .35s}
-    .reel-play-b{display:block;text-align:center;position:absolute;top:0;left:0;right:0;transform:translateY(36px);opacity:0;transition:transform .45s cubic-bezier(.16,1,.3,1),opacity .35s}
+    .reel-play-a{display:block;text-align:center;transition:transform .45s cubic-bezier(,1,.3,1),opacity .35s}
+    .reel-play-b{position:absolute;top:0;left:50%;transform:translateX(-50%) translateY(36px);opacity:0;white-space:nowrap;transition:transform .45s cubic-bezier(.16,1,.3,1),opacity .35s}
     .reel-play:hover .reel-play-a{transform:translateY(-36px);opacity:0}
-    .reel-play:hover .reel-play-b{transform:translateY(0);opacity:1}
+    .reel-play:hover .reel-play-b{transform:translateX(-50%) translateY(0);opacity:1}
     .reel-iframe{position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .4s;pointer-events:none}
     .reel-inner.playing .reel-iframe{opacity:1;pointer-events:auto}
     .sec-num{font-size:.56rem;letter-spacing:.3em;color:var(--mid)}
@@ -159,6 +160,10 @@
     footer{background:var(--black);border-top:1px solid var(--rule);padding:22px 56px;display:flex;justify-content:space-between;align-items:center}
     footer p,footer span{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mid)}
 
+    /* SECTION GIANT TITLES */
+    .sec-giant-ttl{font-family:'Bebas Neue',sans-serif;font-style:normal;font-weight:400;font-size:clamp(5rem,16vw,22rem);line-height:.85;color:var(--white);letter-spacing:.03em;text-transform:uppercase;margin-bottom:40px;display:block}
+    .sec-giant-ttl.right{text-align:right}
+
     @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fadein{from{opacity:0}to{opacity:1}}
     .reveal{opacity:0;transform:translateY(32px);transition:opacity .95s cubic-bezier(.16,1,.3,1),transform .95s cubic-bezier(.16,1,.3,1)}
@@ -202,6 +207,8 @@
     .n-mobile-sub a:hover,.n-mobile-sub a:active{color:var(--white)}
 
     @media(max-width:768px){
+      .sec-giant-ttl{font-size:clamp(4rem,18vw,8rem);margin-bottom:24px}
+
       /* NAV */
       nav,nav.stuck{padding:.9rem 20px}
       .n-links{display:none}
@@ -310,10 +317,7 @@
 
   <!-- WORKS -->
   <section id="works">
-    <div class="sec-hd reveal from-left">
-      <h2 class="sec-ttl"><span id="e-works-ttl">Selected Works</span></h2>
-      <div class="sec-ln"></div>
-    </div>
+    <h2 class="sec-giant-ttl">Works</h2>
     <div class="cat-grid">
       <a href="digital-2d.html" class="cat-card reveal d1" id="cat-link-1">
         <div class="cat-img" id="cat-img-1" style="background-image:url('images/title-categorie/11.jpg')"></div>
@@ -349,10 +353,7 @@
 
     <!-- DEMO REEL -->
     <div class="reel-section reveal">
-      <div class="sec-hd" style="margin-bottom:24px">
-        <h2 class="sec-ttl">Demo Reel</h2>
-        <div class="sec-ln"></div>
-      </div>
+      <h2 class="sec-giant-ttl right">Demoreel</h2>
       <div class="reel-inner" id="reel-player" onclick="playReel(this)">
         <img class="reel-thumb" src="images/Digital3d/2025/Eclipse/05.jpg" alt="Demo Reel">
         <div class="reel-vignette"></div>
@@ -364,8 +365,8 @@
 
   <!-- ABOUT + CONTACT -->
   <section id="about" style="display:flex;flex-direction:column;overflow:visible">
-    <div style="padding:120px 64px 32px;border-bottom:1px solid var(--rule)">
-      <h2 class="sec-ttl reveal from-left">About &amp; Contact</h2>
+    <div style="padding:72px 64px 40px;border-bottom:1px solid var(--rule)">
+      <h2 class="sec-giant-ttl">About</h2>
     </div>
     <div style="display:flex;flex:1">
       <div class="reveal from-left" style="flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:48px 48px 48px 100px">
@@ -380,7 +381,7 @@ Passionate about drawing, illustration, and 3D, I enjoy experimenting with diffe
 It’s a suspended moment where my ideas take shape and where I feel fully present.</p>
         </div>
       <div id="contact" style="display:flex;flex-direction:column;justify-content:center;padding:64px;position:relative">
-        <h2 class="ct-h reveal d1"><span id="e-ct-h1">Let's create</span><br><em id="e-ct-h2">together.</em></h2>
+        <h2 class="ct-h reveal d1"><span id="e-ct-h1">Let's create</span><br><em id="e-ct-h2">together!</em></h2>
         <a href="mailto:vykodraw@gmail.com" class="ct-mail reveal d2" id="e-email">vykodraw@gmail.com</a>
         <ul class="ct-soc reveal d3">
           <li><a href="https://www.artstation.com/vyko" id="e-ct-soc1" target="_blank"><span id="e-ct-soc1-lbl">ArtStation</span></a></li>
@@ -476,46 +477,6 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
         });
       }
 
-      // SHOOTING STARS
-      const stars = [];
-      function spawnStar(){
-        const angle = (Math.random()*60 - 30) * Math.PI/180; // mostly diagonal
-        const spd = 2.5 + Math.random()*2;
-        stars.push({
-          x: Math.random()*W, y: Math.random()*H*0.5,
-          vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd + 0.5,
-          len: 60+Math.random()*80,
-          a: 0, life: 0, maxLife: 180+Math.random()*120
-        });
-      }
-      setInterval(() => { if(Math.random()<.15) spawnStar(); }, 7000);
-
-      function drawStars(){
-        for(let i=stars.length-1;i>=0;i--){
-          const s=stars[i];
-          s.life++;
-          s.x+=s.vx; s.y+=s.vy;
-          const t=s.life/s.maxLife;
-          s.a = t<0.2 ? t/0.2 : 1-(t-0.2)/0.8;
-          const nx=-s.vy/Math.sqrt(s.vx*s.vx+s.vy*s.vy);
-          const ny= s.vx/Math.sqrt(s.vx*s.vx+s.vy*s.vy);
-          const grad=ctx.createLinearGradient(s.x,s.y,s.x-s.vx/Math.abs(s.vx)*s.len*Math.cos(Math.atan2(s.vy,s.vx)),s.y-s.len*Math.sin(Math.atan2(s.vy,s.vx)));
-          grad.addColorStop(0,`rgba(255,255,255,${s.a*.9})`);
-          grad.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.beginPath();
-          ctx.moveTo(s.x,s.y);
-          ctx.lineTo(s.x-s.vx/Math.hypot(s.vx,s.vy)*s.len, s.y-s.vy/Math.hypot(s.vx,s.vy)*s.len);
-          ctx.strokeStyle=grad;
-          ctx.lineWidth=1.5;
-          ctx.stroke();
-          // tip glow
-          ctx.beginPath();
-          ctx.arc(s.x,s.y,1.5,0,Math.PI*2);
-          ctx.fillStyle=`rgba(255,255,255,${s.a})`;
-          ctx.fill();
-          if(s.life>=s.maxLife||s.x>W+200||s.y>H+200) stars.splice(i,1);
-        }
-      }
 
       function draw(){
         ctx.clearRect(0,0,W,H);
@@ -561,7 +522,6 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
           }
         });
         drawSparks();
-        drawStars();
         requestAnimationFrame(draw);
       }
       draw();
@@ -617,8 +577,12 @@ It’s a suspended moment where my ideas take shape and where I feel fully prese
     }
 
     // Scroll reveal
-    const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.08, rootMargin:'0px 0px -40px 0px'});
+    // Scroll reveal
+    const obs = new IntersectionObserver(e => e.forEach(x => {
+      if(x.isIntersecting) x.target.classList.add('in');
+    }), {threshold:.08, rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
 
     // BURGER MENU
     const burger = document.querySelector('.n-burger');

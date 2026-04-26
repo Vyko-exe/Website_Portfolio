@@ -7,26 +7,17 @@
   <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&amp;family=Tenor+Sans&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
     html,body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
-    body::before{
-      content:'';position:fixed;inset:-30%;z-index:0;pointer-events:none;
-      background:
-        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(80,40,160,.20) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(30,80,180,.16) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 60% 15%, rgba(140,30,110,.13) 0%, transparent 70%),
-        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(20,60,120,.15) 0%, transparent 70%);
-      animation:nebula-drift 20s ease-in-out infinite alternate;
-    }
-    @keyframes nebula-drift{
-      0%  {transform:translate(0,0) scale(1)}
-      33% {transform:translate(2%,1.5%) scale(1.02)}
-      66% {transform:translate(-1.5%,2%) scale(1.01)}
-      100%{transform:translate(1%,-1%) scale(1.03)}
-    }
+    html{cursor:none}
+    body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
+    #cur{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .3s,height .3s}
+    #cur-f{position:fixed;top:0;left:0;width:40px;height:40px;border:1px solid rgba(232,232,232,.25);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+    #cur.big{width:48px;height:48px}
+    #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
     nav,#lightbox,.page-header,.content,.back-bar,#reorder-bar{position:relative;z-index:1}
 
     /* NAV */
@@ -127,6 +118,9 @@
   </style>
 </head>
 <body style="padding-bottom: 60px;">
+  <div id="cur"></div>
+  <div id="cur-f"></div>
+  <canvas id="bg-canvas"></canvas>
 
   <!-- LIGHTBOX -->
   <div id="lightbox" class="">
@@ -540,6 +534,13 @@
       if (e.key === 'ArrowLeft')  navProject(-1);
       if (e.key === 'ArrowRight') navProject(1);
     });
+    // CURSOR
+    const cur = document.getElementById('cur');
+    const curF = document.getElementById('cur-f');
+    let cmx=0,cmy=0,cfx=0,cfy=0;
+    document.addEventListener('mousemove',e=>{cmx=e.clientX;cmy=e.clientY;cur.style.left=cmx+'px';cur.style.top=cmy+'px'});
+    (function tick(){cfx+=(cmx-cfx)*.1;cfy+=(cmy-cfy)*.1;curF.style.left=cfx+'px';curF.style.top=cfy+'px';requestAnimationFrame(tick)})();
+    document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>cur.classList.add('big'));el.addEventListener('mouseleave',()=>cur.classList.remove('big'))});
   </script>
 
 

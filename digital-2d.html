@@ -7,26 +7,17 @@
   <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&amp;family=Tenor+Sans&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
     html,body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
-    body::before{
-      content:'';position:fixed;inset:-30%;z-index:0;pointer-events:none;
-      background:
-        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(80,40,160,.20) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(30,80,180,.16) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 60% 15%, rgba(140,30,110,.13) 0%, transparent 70%),
-        radial-gradient(ellipse 70% 50% at 50% 90%, rgba(20,60,120,.15) 0%, transparent 70%);
-      animation:nebula-drift 20s ease-in-out infinite alternate;
-    }
-    @keyframes nebula-drift{
-      0%  {transform:translate(0,0) scale(1)}
-      33% {transform:translate(2%,1.5%) scale(1.02)}
-      66% {transform:translate(-1.5%,2%) scale(1.01)}
-      100%{transform:translate(1%,-1%) scale(1.03)}
-    }
+    html{cursor:none}
+    body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
+    #cur{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .3s,height .3s}
+    #cur-f{position:fixed;top:0;left:0;width:40px;height:40px;border:1px solid rgba(232,232,232,.25);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+    #cur.big{width:48px;height:48px}
+    #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
     nav,#lightbox,.page-header,.content,.back-bar,#reorder-bar{position:relative;z-index:1}
 
     /* NAV */
@@ -188,6 +179,9 @@
   </style>
 </head>
 <body style="padding-bottom: 60px;">
+  <div id="cur"></div>
+  <div id="cur-f"></div>
+  <canvas id="bg-canvas"></canvas>
 
   <!-- LIGHTBOX -->
   <div id="lightbox" class="">
@@ -523,6 +517,45 @@
       if (e.key==='ArrowLeft')  { const n=all().length; open((current-1+n)%n); }
       if (e.key==='ArrowRight') open((current+1)%all().length);
     });
+    // BACKGROUND PARTICLES
+    (function(){
+      const cv=document.getElementById('bg-canvas'),ctx=cv.getContext('2d');
+      let W,H,mx=-999,my=-999;
+      document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+      function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+      window.addEventListener('resize',resize);resize();
+      const LAYERS=[
+        {n:32,r:[.2,.5],spd:.06,a:[.06,.16],rep:.01,lnD:90,lnA:.06},
+        {n:20,r:[.4,.9],spd:.14,a:[.15,.35],rep:.04,lnD:110,lnA:.11},
+        {n:8,r:[.9,1.8],spd:.28,a:[.35,.65],rep:.09,lnD:70,lnA:.16},
+      ];
+      function mkPt(l){const bvx=(Math.random()-.5)*l.spd,bvy=(Math.random()-.5)*l.spd,ba=l.a[0]+Math.random()*(l.a[1]-l.a[0]);return{x:Math.random()*W,y:Math.random()*H,vx:bvx,vy:bvy,bvx,bvy,r:l.r[0]+Math.random()*(l.r[1]-l.r[0]),ba,a:ba,phase:Math.random()*Math.PI*2,freq:.008+Math.random()*.018,amp:.2+Math.random()*.45,rep:l.rep,lnD:l.lnD,lnA:l.lnA}}
+      const layers=LAYERS.map(l=>Array.from({length:l.n},()=>mkPt(l)));
+      const consts=[],MAX_CONST=16,LINK_D=220,LIFE=1800;
+      document.addEventListener('click',e=>{consts.push({x:e.clientX,y:e.clientY,phase:Math.random()*Math.PI*2,age:0});if(consts.length>MAX_CONST)consts.shift()});
+      function drawSparks(){
+        for(let i=consts.length-1;i>=0;i--){consts[i].age++;if(consts[i].age>LIFE)consts.splice(i,1)}
+        for(let i=0;i<consts.length;i++)for(let j=i+1;j<consts.length;j++){const dx=consts[i].x-consts[j].x,dy=consts[i].y-consts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<LINK_D){const fa=Math.min(consts[i].age,consts[j].age,LIFE-consts[i].age,LIFE-consts[j].age),fade=Math.min(1,fa/60);ctx.beginPath();ctx.moveTo(consts[i].x,consts[i].y);ctx.lineTo(consts[j].x,consts[j].y);ctx.strokeStyle=`rgba(255,255,255,${.18*(1-d/LINK_D)*fade})`;ctx.lineWidth=.7;ctx.stroke()}}
+        consts.forEach(c=>{c.phase+=.03;const fade=Math.min(1,c.age/60,(LIFE-c.age)/60),a=(0.55+Math.sin(c.phase)*.3)*fade,grd=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,8);grd.addColorStop(0,`rgba(255,255,255,${a*.4})`);grd.addColorStop(1,'rgba(255,255,255,0)');ctx.beginPath();ctx.arc(c.x,c.y,8,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();ctx.beginPath();ctx.arc(c.x,c.y,1.8,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill()});
+      }
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+        layers.forEach(layer=>{
+          layer.forEach(p=>{const dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);if(d<200&&d>0){const f=(200-d)/200;p.vx-=(dx/d)*f*p.rep*4;p.vy-=(dy/d)*f*p.rep*4;if(d<8){p.x=Math.random()*W;p.y=Math.random()*H;p.vx=p.bvx;p.vy=p.bvy}}p.vx+=(p.bvx-p.vx)*.02;p.vy+=(p.bvy-p.vy)*.02;p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;p.phase+=p.freq;p.a=Math.max(0,p.ba+Math.sin(p.phase)*p.amp);ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,220,220,${p.a})`;ctx.fill()});
+          for(let i=0;i<layer.length;i++)for(let j=i+1;j<layer.length;j++){const dx=layer[i].x-layer[j].x,dy=layer[i].y-layer[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<layer[i].lnD){ctx.beginPath();ctx.moveTo(layer[i].x,layer[i].y);ctx.lineTo(layer[j].x,layer[j].y);ctx.strokeStyle=`rgba(200,200,200,${layer[i].lnA*(1-d/layer[i].lnD)})`;ctx.lineWidth=layer[i].r*.4;ctx.stroke()}}
+        });
+        drawSparks();requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // CURSOR
+    const cur = document.getElementById('cur');
+    const curF = document.getElementById('cur-f');
+    let cmx=0,cmy=0,cfx=0,cfy=0;
+    document.addEventListener('mousemove',e=>{cmx=e.clientX;cmy=e.clientY;cur.style.left=cmx+'px';cur.style.top=cmy+'px'});
+    (function tick(){cfx+=(cmx-cfx)*.1;cfy+=(cmy-cfy)*.1;curF.style.left=cfx+'px';curF.style.top=cfy+'px';requestAnimationFrame(tick)})();
+    document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>cur.classList.add('big'));el.addEventListener('mouseleave',()=>cur.classList.remove('big'))});
   </script>
 
 
