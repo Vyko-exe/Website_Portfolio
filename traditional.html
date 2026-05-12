@@ -1,34 +1,61 @@
 <!DOCTYPE html>
-<html lang="en"><head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+<html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital 2D — Victor Dalbin</title>
+  <title>Traditional — Victor Dalbin</title>
   <link rel="icon" type="image/png" href="Favicon.png"/>
+
+  <!-- Police Rockybilly (logo) — fichier local dans /fonts/ -->
   <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
+
+  <!-- Polices Google : Bebas Neue (titres géants), Playfair Display (italiques), Tenor Sans (texte) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
+
   <style>
+    /* ── RESET & VARIABLES ──────────────────────────────────────────────────── */
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    :root{--black:#0d0d0d;--dark1:#141414;--dark2:#1c1c1c;--mid:#5a5a5a;--light:#a0a0a0;--white:#e8e8e8;--rule:rgba(255,255,255,.07)}
+    :root{
+      --black:#0d0d0d;   /* fond principal */
+      --dark1:#141414;
+      --dark2:#1c1c1c;   /* fond des placeholders */
+      --mid:#5a5a5a;     /* texte secondaire (liens discrets, labels) */
+      --light:#a0a0a0;
+      --white:#e8e8e8;   /* texte principal */
+      --rule:rgba(255,255,255,.07); /* lignes séparatrices subtiles */
+    }
     html,body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
-    html{cursor:none}
+    html{cursor:none} /* curseur natif masqué — remplacé par #cur et #cur-f */
+
+    /* grain de film en overlay fixe sur toute la page */
     body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
+
+    /* ── CURSEUR PERSONNALISÉ ───────────────────────────────────────────────── */
+    /* #cur = point central (suit la souris instantanément, mix-blend-mode:difference) */
     #cur{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .3s,height .3s}
+    /* #cur-f = anneau extérieur (lag de 10% pour effet smooth) */
     #cur-f{position:fixed;top:0;left:0;width:40px;height:40px;border:1px solid rgba(232,232,232,.25);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+    /* s'agrandit au survol des liens et boutons */
     #cur.big{width:48px;height:48px}
+
+    /* canvas des particules en fond fixe */
     #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+    /* tout le contenu principal passe devant le canvas */
     nav,#lightbox,.page-header,.content,.back-bar,#reorder-bar{position:relative;z-index:1}
 
-    /* NAV */
+    /* ── NAVIGATION ─────────────────────────────────────────────────────────── */
     nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:1rem 4rem;display:flex;align-items:center;justify-content:space-between;background:rgba(13,13,13,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--rule)}
     .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:1rem;letter-spacing:.02em;color:var(--white);text-decoration:none;display:inline-block;margin-top:6px}
-    .n-logo em{font-style:normal;color:var(--mid)}
+    .n-logo em{font-style:normal;color:var(--mid)} /* le "." après le nom */
     .n-links{display:flex;gap:2.8rem;list-style:none;align-items:center}
     .n-links a{font-family:'Tenor Sans',sans-serif;font-size:.58rem;font-weight:400;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,232,232,.45);text-decoration:none;transition:color .3s;position:relative}
+    /* soulignement animé au survol */
     .n-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--white);transition:width .35s}
     .n-links a:hover,.n-links a.active{color:var(--white)}
     .n-links a:hover::after{width:100%}
+
+    /* dropdown "Works" — flottant sans bordure */
     .n-drop{position:relative}
     .n-drop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-6px);min-width:140px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;background:rgba(13,13,13,.96);backdrop-filter:blur(14px);padding:16px 0 10px}
     .n-drop-menu::before{display:none}
@@ -36,14 +63,20 @@
     .n-drop-menu a::after{display:none}
     .n-drop-menu a:hover{color:var(--white)}
     .n-drop:hover .n-drop-menu{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+
+    /* bouton "Contact" encadré */
     .n-cta{border:1px solid rgba(232,232,232,.35) !important;padding:.45rem 1.3rem;font-family:'Tenor Sans',sans-serif;transition:background .3s,color .3s,border-color .3s !important}
     .n-cta:hover{background:var(--white) !important;color:var(--black) !important;border-color:var(--white) !important}
     .n-cta::after{display:none !important}
+
+    /* burger mobile — visible uniquement sous 768px */
     .n-burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:none;padding:6px;z-index:201}
     .n-burger span{display:block;width:22px;height:1px;background:var(--white);transition:transform .3s,opacity .3s}
     .n-burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
     .n-burger.open span:nth-child(2){opacity:0}
     .n-burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* menu mobile plein écran */
     .n-mobile-menu{display:none;position:fixed;inset:0;background:rgba(13,13,13,.97);backdrop-filter:blur(16px);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:28px}
     .n-mobile-menu.open{display:flex}
     .n-mob-link{font-size:.75rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
@@ -51,120 +84,73 @@
     .n-mobile-sub{display:flex;flex-direction:column;align-items:center;gap:14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:18px 0;width:70%}
     .n-mobile-sub a{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
     .n-mobile-sub a:hover,.n-mobile-sub a:active{color:var(--white)}
+
     @media(max-width:768px){nav{padding:.9rem 20px !important}.n-links{display:none}.n-burger{display:flex}}
 
-    /* PAGE HEADER */
-    .page-header{padding:200px 64px 20px;display:block}
+    /* ── EN-TÊTE DE PAGE ────────────────────────────────────────────────────── */
+    /* padding-top:200px pour laisser de l'espace sous la nav fixe */
+    .page-header{padding:200px 64px 40px;display:block}
     .page-title{font-family:'Bebas Neue',sans-serif;font-style:normal;font-weight:400;font-size:clamp(5rem,16vw,22rem);line-height:.85;color:var(--white);letter-spacing:.03em;text-transform:uppercase;display:block}
-    .page-title em{font-family:'Bebas Neue',sans-serif;font-style:normal;color:var(--mid)}
 
-    /* MAIN CONTENT */
-    .content{padding:0 56px 80px}
+    /* ── CONTENU PRINCIPAL ──────────────────────────────────────────────────── */
+    .content{padding:40px 56px 80px}
 
-    /* YEAR BLOCK */
-    .year-block{padding-top:52px}
-    .year-block + .year-block{border-top:1px solid var(--rule)}
+    /* ── GRILLE D'IMAGES ────────────────────────────────────────────────────── */
+    /*
+      POUR AJOUTER UNE IMAGE :
+        Remplace <div class="thumb-ph">...</div> par :
+        <div class="thumb-img" data-bg="images/ton-image.jpg"></div>
+        → data-bg = chemin vers l'image (chargement lazy automatique)
 
-    .year-heading{
-      font-family:'Playfair Display',serif;
-      font-weight:400;
-      font-size:clamp(1.8rem,3.5vw,3rem);
-      color:rgba(255,255,255,.15);
-      margin-bottom:18px;
-      line-height:1;
-    }
+      POUR NOMMER L'IMAGE :
+        Modifie data-title="..." sur le .thumb
+        → affiché dans la lightbox et au survol (.thumb-label)
 
-    /* THUMBNAIL STRIP — very close to reference */
-    .thumb-strip{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:flex-start;
-      padding-bottom:48px;
-    }
+      TEMPLATE PLACEHOLDER (avant image) :
+        <div class="thumb" data-title="Titre">
+          <div class="thumb-ph"><span class="thumb-ph-num">01</span></div>
+          <div class="thumb-ov"></div>
+          <div class="thumb-label">Titre</div>
+        </div>
 
-    .thumb{
-      position:relative;
-      width:220px;
-      height:300px;
-      overflow:hidden;
-      cursor:pointer;
-      background:var(--dark2);
-      flex-shrink:0;
-      transition:transform .3s cubic-bezier(.25,.46,.45,.94),box-shadow .3s;
-      will-change:transform;
-      transform:translateZ(0);
-    }
-    .thumb:hover{
-      transform:translateY(-4px);
-      box-shadow:0 12px 32px rgba(0,0,0,.7);
-      z-index:2;
-    }
+      TEMPLATE AVEC IMAGE (après remplacement) :
+        <div class="thumb" data-title="Titre">
+          <div class="thumb-img" data-bg="images/mon-dessin.jpg"></div>
+          <div class="thumb-ov"></div>
+          <div class="thumb-label">Titre</div>
+        </div>
+    */
+    .thumb-strip{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
 
-    /* background image */
-    .thumb-img{
-      position:absolute;inset:0;
-      background-size:cover;
-      background-position:center top;
-      transition:transform .5s cubic-bezier(.25,.46,.45,.94);
-      will-change:transform;
-      transform:translateZ(0);
-    }
+    /* carte individuelle — 220×300px par défaut */
+    .thumb{position:relative;width:220px;height:300px;overflow:hidden;cursor:pointer;background:var(--dark2);flex-shrink:0;transition:transform .3s cubic-bezier(.25,.46,.45,.94),box-shadow .3s;will-change:transform;transform:translateZ(0)}
+    .thumb:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.7);z-index:2}
+
+    /* fond image (chargé via data-bg par le lazy observer) */
+    .thumb-img{position:absolute;inset:0;background-size:cover;background-position:center top;transition:transform .5s cubic-bezier(.25,.46,.45,.94);will-change:transform;transform:translateZ(0)}
     .thumb:hover .thumb-img{transform:scale(1.06)}
 
-    /* placeholder */
-    .thumb-ph{
-      position:absolute;inset:0;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(160deg,#1a1a1a 0%,#111 100%);
-    }
-    .thumb-ph::before{
-      content:'';position:absolute;
-      inset:0;
-      background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0,rgba(255,255,255,.4) 1px,transparent 0,transparent 50%);
-      background-size:6px 6px;
-      opacity:.025;
-    }
-    .thumb-ph-num{
-      font-family:'Playfair Display',serif;
-      font-style:italic;
-      font-size:1rem;
-      color:rgba(255,255,255,.1);
-    }
+    /* placeholder visible tant qu'il n'y a pas d'image */
+    .thumb-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#1a1a1a 0%,#111 100%)}
+    .thumb-ph::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0,rgba(255,255,255,.4) 1px,transparent 0,transparent 50%);background-size:6px 6px;opacity:.025}
+    .thumb-ph-num{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:rgba(255,255,255,.1)}
 
-    /* hover overlay */
-    .thumb-ov{
-      position:absolute;inset:0;
-      background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);
-      opacity:0;transition:opacity .3s;
-    }
+    /* dégradé sombre en bas au survol */
+    .thumb-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);opacity:0;transition:opacity .3s}
     .thumb:hover .thumb-ov{opacity:1}
 
-    /* title on hover */
-    .thumb-label{
-      position:absolute;
-      bottom:0;left:0;right:0;
-      padding:10px 10px 8px;
-      font-size:.48rem;
-      letter-spacing:.2em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.9);
-      opacity:0;transform:translateY(4px);
-      transition:opacity .3s,transform .3s;
-    }
-    .thumb-label::before{
-      content:'';display:block;
-      width:14px;height:1px;
-      background:rgba(255,255,255,.6);
-      margin-bottom:5px;
-    }
+    /* label titre qui apparaît au survol */
+    .thumb-label{position:absolute;bottom:0;left:0;right:0;padding:10px 10px 8px;font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.9);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+    .thumb-label::before{content:'';display:block;width:14px;height:1px;background:rgba(255,255,255,.6);margin-bottom:5px}
     .thumb:hover .thumb-label{opacity:1;transform:translateY(0)}
 
-    /* LIGHTBOX */
+    /* ── LIGHTBOX ───────────────────────────────────────────────────────────── */
+    /* s'ouvre au clic sur une miniature — navigation clavier ← → Escape */
     #lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
     #lightbox.open{display:flex}
     #lb-img{max-width:88vw;max-height:90vh;object-fit:contain;opacity:0;transition:opacity .3s}
     #lb-img.loaded{opacity:1}
+    /* boîte affichée à la place de l'image quand c'est encore un placeholder */
     .lb-ph-box{width:400px;height:400px;background:var(--dark2);display:flex;align-items:center;justify-content:center}
     .lb-ph-box span{font-family:'Playfair Display',serif;font-style:italic;font-size:2.5rem;color:rgba(255,255,255,.07)}
     #lb-close{position:absolute;top:22px;right:26px;background:none;border:none;color:var(--light);font-size:1.3rem;cursor:pointer;transition:color .2s;line-height:1}
@@ -176,49 +162,52 @@
     #lb-meta-title{font-family:'Playfair Display',serif;font-style:italic;font-size:.9rem;color:var(--white);display:block}
     #lb-meta-info{font-size:.44rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mid);margin-top:4px;display:block}
 
-    /* BACK */
+    /* ── LIEN RETOUR ────────────────────────────────────────────────────────── */
     .back-bar{padding:0 56px 60px}
     .back-link{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s;display:inline-flex;align-items:center;gap:10px}
     .back-link:hover{color:var(--white)}
     .back-link::before{content:'←';font-size:.65rem}
 
-    /* Reveal */
+    /* animation d'apparition au scroll */
     .reveal{opacity:0;transform:translateY(12px);transition:opacity .55s,transform .55s}
     .reveal.in{opacity:1;transform:none}
-    .d1{transition-delay:.07s}.d2{transition-delay:.14s}.d3{transition-delay:.21s}
 
+    /* ── MOBILE ─────────────────────────────────────────────────────────────── */
     @media(max-width:768px){
-      nav{padding:0 20px}.n-right,.n-links li:last-child{display:none}.n-links{gap:16px}
-      .page-header{padding:90px 20px 36px;flex-direction:column;align-items:flex-start}.page-count{display:none}
-      .content{padding:0 20px 60px}
+      .page-header{padding:90px 20px 32px}
+      .content{padding:24px 20px 60px}
       .thumb{width:120px;height:120px}
       .back-bar{padding:0 20px 40px}
     }
   </style>
 </head>
-<body style="padding-bottom: 60px;">
+<body>
+  <!-- curseur personnalisé -->
   <div id="cur"></div>
   <div id="cur-f"></div>
+
+  <!-- canvas particules en fond -->
   <canvas id="bg-canvas"></canvas>
 
-  <!-- LIGHTBOX -->
-  <div id="lightbox" class="">
+  <!-- ── LIGHTBOX ─────────────────────────────────────────────────────────── -->
+  <div id="lightbox">
     <button id="lb-close">✕</button>
     <button id="lb-prev">‹</button>
-    <div id="lb-content"><img id="lb-img" src="images/Digital2d/2025/11.jpg" class="loaded"></div>
+    <div id="lb-content"></div>
     <button id="lb-next">›</button>
     <div id="lb-meta">
-      <span id="lb-meta-title">11</span>
-      <span id="lb-meta-info">2025</span>
+      <span id="lb-meta-title"></span>
+      <span id="lb-meta-info"></span>
     </div>
   </div>
 
-  <!-- NAV -->
+  <!-- ── NAVIGATION ───────────────────────────────────────────────────────── -->
   <nav>
     <a href="index.html" class="n-logo">Victor Dalbin<em>.</em></a>
     <ul class="n-links">
       <li><a href="index.html#hero">Home</a></li>
       <li class="n-drop">
+        <!-- "Works" reste actif (surligné) sur toutes les sous-pages gallery -->
         <a href="index.html#works" class="active">Works</a>
         <div class="n-drop-menu">
           <a href="digital-2d.html">Digital 2D</a>
@@ -229,10 +218,11 @@
       <li><a href="index.html#about">About</a></li>
       <li><a href="index.html#contact" class="n-cta">Contact</a></li>
     </ul>
+    <!-- bouton burger — visible uniquement sur mobile -->
     <button class="n-burger" aria-label="Menu"><span></span><span></span><span></span></button>
   </nav>
 
-  <!-- MOBILE MENU -->
+  <!-- ── MENU MOBILE (plein écran) ────────────────────────────────────────── -->
   <div class="n-mobile-menu">
     <a href="index.html#hero" class="n-mob-link">Home</a>
     <div class="n-mobile-sub">
@@ -245,101 +235,141 @@
     <a href="index.html#contact" class="n-mob-link">Contact</a>
   </div>
 
-  <!-- HEADER -->
+  <!-- ── EN-TÊTE ───────────────────────────────────────────────────────────── -->
+  <!-- 5 clics sur le titre activent le mode réorganisation (drag & drop) -->
   <div class="page-header">
-    <div>
-<h1 class="page-title">Digital <em>2D</em></h1>
+    <h1 class="page-title">Traditional</h1>
+  </div>
+
+  <!-- ── GALERIE ───────────────────────────────────────────────────────────── -->
+  <!--
+    POUR REMPLACER UN PLACEHOLDER PAR UNE VRAIE IMAGE :
+      1. Mets ton fichier image dans le dossier /images/ (ou n'importe où)
+      2. Supprime la div.thumb-ph à l'intérieur du .thumb
+      3. Ajoute à la place : <div class="thumb-img" data-bg="images/ton-fichier.jpg"></div>
+      4. Change data-title="..." pour le nom qui apparaît dans la lightbox
+      5. Change aussi le texte dans .thumb-label si besoin
+
+    POUR AJOUTER UNE IMAGE EN PLUS :
+      Copie-colle un bloc .thumb complet et adapte le numéro / titre
+
+    POUR SUPPRIMER UN PLACEHOLDER :
+      Supprime tout le bloc <div class="thumb" ...>...</div>
+  -->
+  <div class="content">
+    <div class="thumb-strip reveal in">
+
+      <!-- Image 01 — remplace thumb-ph par thumb-img + data-bg="chemin/image.jpg" -->
+      <div class="thumb" data-title="Image 01">
+        <div class="thumb-ph"><span class="thumb-ph-num">01</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 01</div>
+      </div>
+
+      <!-- Image 02 -->
+      <div class="thumb" data-title="Image 02">
+        <div class="thumb-ph"><span class="thumb-ph-num">02</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 02</div>
+      </div>
+
+      <!-- Image 03 -->
+      <div class="thumb" data-title="Image 03">
+        <div class="thumb-ph"><span class="thumb-ph-num">03</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 03</div>
+      </div>
+
+      <!-- Image 04 -->
+      <div class="thumb" data-title="Image 04">
+        <div class="thumb-ph"><span class="thumb-ph-num">04</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 04</div>
+      </div>
+
+      <!-- Image 05 -->
+      <div class="thumb" data-title="Image 05">
+        <div class="thumb-ph"><span class="thumb-ph-num">05</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 05</div>
+      </div>
+
+      <!-- Image 06 -->
+      <div class="thumb" data-title="Image 06">
+        <div class="thumb-ph"><span class="thumb-ph-num">06</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 06</div>
+      </div>
+
+      <!-- Image 07 -->
+      <div class="thumb" data-title="Image 07">
+        <div class="thumb-ph"><span class="thumb-ph-num">07</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 07</div>
+      </div>
+
+      <!-- Image 08 -->
+      <div class="thumb" data-title="Image 08">
+        <div class="thumb-ph"><span class="thumb-ph-num">08</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 08</div>
+      </div>
+
+      <!-- Image 09 -->
+      <div class="thumb" data-title="Image 09">
+        <div class="thumb-ph"><span class="thumb-ph-num">09</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 09</div>
+      </div>
+
+      <!-- Image 10 -->
+      <div class="thumb" data-title="Image 10">
+        <div class="thumb-ph"><span class="thumb-ph-num">10</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 10</div>
+      </div>
+
+      <!-- Image 11 -->
+      <div class="thumb" data-title="Image 11">
+        <div class="thumb-ph"><span class="thumb-ph-num">11</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 11</div>
+      </div>
+
+      <!-- Image 12 -->
+      <div class="thumb" data-title="Image 12">
+        <div class="thumb-ph"><span class="thumb-ph-num">12</span></div>
+        <div class="thumb-ov"></div>
+        <div class="thumb-label">Image 12</div>
+      </div>
+
     </div>
   </div>
 
-  <div class="content">
-
-    <!-- 2025 -->
-    <div class="year-block reveal in">
-      <h2 class="year-heading">2025</h2>
-      <div class="thumb-strip">
-        <div class="thumb" data-title="Through Anatomy and Shadow" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/11.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Through Anatomy and Shadow</span></div><div class="thumb" data-title="Astraë" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/Astraë.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Astraë</span></div><div class="thumb" data-title="Portrait Flowers" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/portraitflower.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Portrait Flowers</span></div><div class="thumb" data-title="Eveil sous les Plumes" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/Eveil sous les Plumes.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Eveil sous les Plumes</span></div><div class="thumb" data-title="03" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/03.png"></div><div class="thumb-ov"></div><span class="thumb-label">03</span></div><div class="thumb" data-title="10" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/10.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">10</span></div><div class="thumb" data-title="yeah" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/yeah.png"></div><div class="thumb-ov"></div><span class="thumb-label">yeah</span></div><div class="thumb" data-title="kazuya" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/kazuya.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">kazuya</span></div><div class="thumb" data-title="del6" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/del6.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">del6</span></div><div class="thumb" data-title="Illu Impro 2" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/Illu_Impro_2.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Illu Impro 2</span></div><div class="thumb" data-title="1" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/1.png"></div><div class="thumb-ov"></div><span class="thumb-label">1</span></div><div class="thumb" data-title="3" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/3.png"></div><div class="thumb-ov"></div><span class="thumb-label">3</span></div><div class="thumb" data-title="02" data-year="2025" style=""><div class="thumb-img" data-bg="images/Digital2d/2025/02.png"></div><div class="thumb-ov"></div><span class="thumb-label">02</span></div>
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-      </div>
-    </div>
-
-    <!-- 2024 -->
-    <div class="year-block reveal d1 in">
-      <h2 class="year-heading">2024</h2>
-      <div class="thumb-strip">
-        <div class="thumb" data-title="Psyche" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/psyche.png"></div><div class="thumb-ov"></div><span class="thumb-label">Psyche</span></div><div class="thumb" data-title="Mullins Study" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/mullinsstudy.png"></div><div class="thumb-ov"></div><span class="thumb-label">Mullins Study</span></div><div class="thumb" data-title="4" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/4.png"></div><div class="thumb-ov"></div><span class="thumb-label">4</span></div><div class="thumb" data-title="Dune" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/Dune.png"></div><div class="thumb-ov"></div><span class="thumb-label">Dune</span></div><div class="thumb" data-title="1" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/1.png"></div><div class="thumb-ov"></div><span class="thumb-label">1</span></div>
-        <div class="thumb" data-title="2" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/2.png"></div><div class="thumb-ov"></div><span class="thumb-label">2</span></div>
-        
-        
-        
-        
-        <div class="thumb" data-title="3" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/3.png"></div><div class="thumb-ov"></div><span class="thumb-label">3</span></div><div class="thumb" data-title="Fallout" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/Fallout.png"></div><div class="thumb-ov"></div><span class="thumb-label">Fallout</span></div>
-        <div class="thumb" data-title="Horse" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/Horse.png"></div><div class="thumb-ov"></div><span class="thumb-label">Horse</span></div><div class="thumb" data-title="Mixer Sky" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/mixersky.png"></div><div class="thumb-ov"></div><span class="thumb-label">Mixer Sky</span></div>
-        
-        
-        <div class="thumb" data-title="Wolves" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/Wolves.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Wolves</span></div><div class="thumb" data-title="View" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/View.png"></div><div class="thumb-ov"></div><span class="thumb-label">View</span></div>
-        <div class="thumb" data-title="Cloud 1" data-year="2024" style=""><div class="thumb-img" data-bg="images/Digital2d/2024/cloud1.png"></div><div class="thumb-ov"></div><span class="thumb-label">Cloud 1</span></div>
-        
-      </div>
-    </div>
-
-    <!-- 2023 -->
-    <div class="year-block reveal d2 in">
-      <h2 class="year-heading">2023</h2>
-      <div class="thumb-strip">
-        <div class="thumb" data-title="Ruan Jia Study" data-year="2023" style=""><div class="thumb-img" data-bg="images/Digital2d/2023/Ruan Jia Study.jpg"></div><div class="thumb-ov"></div><span class="thumb-label">Ruan Jia Study</span></div>
-      </div>
-    </div>
-
-
-  </div><!-- /content -->
-
-  <!-- BACK -->
+  <!-- ── RETOUR ────────────────────────────────────────────────────────────── -->
   <div class="back-bar">
     <a href="index.html#works" class="back-link">Back to Works</a>
   </div>
 
-  <!-- TITLE EDIT PANEL -->
-  <div id="title-panel" style="display: none; position: fixed; inset: 0px; z-index: 1001; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-    <div style="background:rgba(20,20,20,.98);border:1px solid rgba(255,255,255,.1);padding:32px 40px;display:flex;flex-direction:column;gap:20px;min-width:340px">
-      <span style="font-size:.42rem;letter-spacing:.3em;text-transform:uppercase;color:#5a5a5a">Modifier le titre</span>
-      <input id="title-panel-input" type="text" style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:#e8e8e8;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.25);outline:none;padding:4px 2px;width:100%">
-      <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button id="title-panel-confirm" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#e8e8e8;padding:6px 18px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Confirmer</button>
-        <button id="title-panel-cancel" style="background:none;border:1px solid rgba(255,255,255,.2);color:#a0a0a0;padding:6px 18px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Annuler</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- REORDER BAR -->
-  <div id="reorder-bar" style="display: none; position: fixed; bottom: 0px; left: 0px; right: 0px; z-index: 500; background: rgba(20, 20, 20, 0.97); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 12px 56px; align-items: center; justify-content: space-between; gap: 16px;">
+  <!-- ── BARRE MODE RÉORGANISATION ────────────────────────────────────────── -->
+  <!-- Activée par 5 clics rapides sur le titre de la page — invisible normalement -->
+  <div id="reorder-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(20,20,20,.97);border-top:1px solid rgba(255,255,255,.1);padding:12px 56px;align-items:center;justify-content:space-between;gap:16px">
     <span style="font-size:.48rem;letter-spacing:.25em;text-transform:uppercase;color:#a0a0a0">Mode réorganisation — glisse les images</span>
     <div style="display:flex;gap:10px">
+      <!-- télécharge le fichier HTML avec le nouvel ordre sauvegardé -->
       <button id="reorder-save" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Sauvegarder (télécharger)</button>
       <button id="reorder-exit" style="background:none;border:1px solid rgba(255,255,255,.2);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Quitter</button>
     </div>
   </div>
 
   <script>
-    // ── REORDER MODE ─────────────────────────────────────────────────────────
+    // ── MODE RÉORGANISATION ───────────────────────────────────────────────────
+    // Activé par 5 clics rapides sur le titre — permet de drag & drop les images
     let reorderActive = false;
     let dragSrc = null;
     let didDrag = false;
     const reorderBar = document.getElementById('reorder-bar');
 
-    // SECRET TRIGGER : 5 clics rapides sur le titre de la page
     let titleClicks = 0, titleTimer;
     document.querySelector('.page-title').addEventListener('click', () => {
       titleClicks++;
@@ -391,7 +421,7 @@
       else strip.insertBefore(dragSrc, this);
     }
 
-    // ── SAVE ─────────────────────────────────────────────────────────────────
+    // ── SAUVEGARDE (téléchargement du HTML réorganisé) ────────────────────────
     function buildCleanHTML() {
       const clone = document.documentElement.cloneNode(true);
       clone.querySelectorAll('.thumb').forEach(t => {
@@ -399,12 +429,12 @@
         t.style.cssText = '';
         const img = t.querySelector('.thumb-img');
         if (img) {
+          // conserve le chemin image dans data-bg (lazy loading)
           const src = img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'').replace(/['"]/g,'');
           if (src) { img.dataset.bg = src; img.removeAttribute('style'); }
         }
       });
       clone.querySelector('#reorder-bar').style.display = 'none';
-      clone.querySelector('#title-panel').style.display = 'none';
       return '<!DOCTYPE html>\n' + clone.outerHTML;
     }
 
@@ -414,7 +444,7 @@
         const blob = new Blob([buildCleanHTML()], { type: 'text/html' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'digital-2d.html';
+        a.download = 'traditional.html';
         a.click();
         URL.revokeObjectURL(a.href);
         btn.textContent = 'Téléchargé !';
@@ -428,14 +458,16 @@
     document.getElementById('reorder-exit').addEventListener('click', exitReorder);
     document.getElementById('reorder-save').addEventListener('click', saveToFile);
 
-    // ── INIT ──────────────────────────────────────────────────────────────────
-    // Remove thumbs with no image
+    // ── INITIALISATION ────────────────────────────────────────────────────────
+    // Supprime les .thumb vides (ni image ni placeholder) — les placeholders sont conservés
     document.querySelectorAll('.thumb').forEach(t => {
       const img = t.querySelector('.thumb-img');
-      if (!img || (!img.dataset.bg && !img.style.backgroundImage)) t.remove();
+      const hasBg = img && (img.dataset.bg || img.style.backgroundImage);
+      const isPh  = t.querySelector('.thumb-ph');
+      if (!hasBg && !isPh) t.remove();
     });
 
-    // Lazy load background images
+    // Lazy loading : charge les images seulement quand elles entrent dans le viewport
     const lazyObs = new IntersectionObserver(e => e.forEach(x => {
       if (x.isIntersecting) {
         const el = x.target;
@@ -445,11 +477,13 @@
     }), {rootMargin:'200px'});
     document.querySelectorAll('.thumb-img[data-bg]').forEach(el => lazyObs.observe(el));
 
-    // Reveal on scroll
+    // Animation d'apparition au scroll sur les éléments .reveal
     const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.05});
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-    // ── LIGHTBOX ─────────────────────────────────────────────────────────────
+    // ── LIGHTBOX ──────────────────────────────────────────────────────────────
+    // Clic sur une miniature → ouvre la lightbox
+    // Navigation : boutons ‹ › ou touches ← → du clavier, Escape pour fermer
     const lb      = document.getElementById('lightbox');
     const lbCont  = document.getElementById('lb-content');
     const lbTitle = document.getElementById('lb-meta-title');
@@ -465,19 +499,20 @@
       const imgEl = t.querySelector('.thumb-img');
       const src = imgEl ? imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
       lbTitle.textContent = t.dataset.title || '';
-      lbInfo.textContent  = t.dataset.year || '';
+      lbInfo.textContent  = '';
       lbCont.innerHTML = '';
       if (src) {
+        // image réelle
         const img = document.createElement('img');
         img.id = 'lb-img';
         img.src = src;
         img.onload = () => img.classList.add('loaded');
         lbCont.appendChild(img);
       } else {
+        // encore un placeholder — affiche juste le numéro
         const box = document.createElement('div');
         box.className = 'lb-ph-box';
-        const num = t.querySelector('.thumb-ph-num');
-        box.innerHTML = '<span>'+(num?num.textContent:(i+1))+'</span>';
+        box.innerHTML = '<span>'+(i+1)+'</span>';
         lbCont.appendChild(box);
       }
       if (!lb.classList.contains('open')) history.pushState({lb:true}, '');
@@ -492,104 +527,55 @@
       history.back();
     }
 
+    // ferme la lightbox si on navigue en arrière dans le browser
     window.addEventListener('popstate', () => {
       if (lb.classList.contains('open')) { lb.classList.remove('open'); document.body.style.overflow = ''; }
     });
 
-    // ── TITLE EDIT PANEL ─────────────────────────────────────────────────────
-    const titlePanel      = document.getElementById('title-panel');
-    const titlePanelInput = document.getElementById('title-panel-input');
-    let   titlePanelThumb = null;
-
-    function openTitlePanel(thumb) {
-      titlePanelThumb = thumb;
-      titlePanelInput.value = thumb.dataset.title || '';
-      titlePanel.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => titlePanelInput.focus(), 50);
-    }
-
-    function closeTitlePanel() {
-      titlePanel.style.display = 'none';
-      document.body.style.overflow = '';
-      titlePanelThumb = null;
-    }
-
-    document.getElementById('title-panel-confirm').addEventListener('click', () => {
-      if (!titlePanelThumb) return;
-      const newTitle = titlePanelInput.value.trim();
-      if (newTitle) {
-        titlePanelThumb.dataset.title = newTitle;
-        const label = titlePanelThumb.querySelector('.thumb-label');
-        if (label) label.textContent = newTitle;
-      }
-      closeTitlePanel();
-    });
-
-    document.getElementById('title-panel-cancel').addEventListener('click', closeTitlePanel);
-
-    titlePanelInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('title-panel-confirm').click();
-      if (e.key === 'Escape') closeTitlePanel();
-    });
-
-    // ── LIGHTBOX + CLICK ─────────────────────────────────────────────────────
     all().forEach(t => t.addEventListener('click', () => {
-      if (reorderActive) { if (!didDrag) openTitlePanel(t); }
-      else open(all().indexOf(t));
+      if (!reorderActive) open(all().indexOf(t));
     }));
     document.getElementById('lb-close').addEventListener('click', close);
     lb.addEventListener('click', e => { if (e.target === lb) close(); });
     document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); const n=all().length; open((current-1+n)%n); });
     document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); open((current+1)%all().length); });
     document.addEventListener('keydown', e => {
-      if (titlePanel.style.display !== 'none') return;
       if (!lb.classList.contains('open')) return;
       if (e.key==='Escape') close();
       if (e.key==='ArrowLeft')  { const n=all().length; open((current-1+n)%n); }
       if (e.key==='ArrowRight') open((current+1)%all().length);
     });
-    // BACKGROUND PARTICLES
+
+    // ── PARTICULES EN FOND ────────────────────────────────────────────────────
+    // 3 couches de particules (petites lentes / moyennes / grandes rapides)
+    // les particules fuient le curseur et se connectent entre elles par des lignes
+    // un clic crée une "constellation" temporaire qui s'estompe progressivement
     (function(){
       const cv=document.getElementById('bg-canvas'),ctx=cv.getContext('2d');
       let W,H,mx=-999,my=-999;
       document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
       function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
       window.addEventListener('resize',resize);resize();
-      const LAYERS=[
-        {n:32,r:[.2,.5],spd:.06,a:[.06,.16],rep:.01,lnD:90,lnA:.06},
-        {n:20,r:[.4,.9],spd:.14,a:[.15,.35],rep:.04,lnD:110,lnA:.11},
-        {n:8,r:[.9,1.8],spd:.28,a:[.35,.65],rep:.09,lnD:70,lnA:.16},
-      ];
+      const LAYERS=[{n:32,r:[.2,.5],spd:.06,a:[.06,.16],rep:.01,lnD:90,lnA:.06},{n:20,r:[.4,.9],spd:.14,a:[.15,.35],rep:.04,lnD:110,lnA:.11},{n:8,r:[.9,1.8],spd:.28,a:[.35,.65],rep:.09,lnD:70,lnA:.16}];
       function mkPt(l){const bvx=(Math.random()-.5)*l.spd,bvy=(Math.random()-.5)*l.spd,ba=l.a[0]+Math.random()*(l.a[1]-l.a[0]);return{x:Math.random()*W,y:Math.random()*H,vx:bvx,vy:bvy,bvx,bvy,r:l.r[0]+Math.random()*(l.r[1]-l.r[0]),ba,a:ba,phase:Math.random()*Math.PI*2,freq:.008+Math.random()*.018,amp:.2+Math.random()*.45,rep:l.rep,lnD:l.lnD,lnA:l.lnA}}
       const layers=LAYERS.map(l=>Array.from({length:l.n},()=>mkPt(l)));
       const consts=[],MAX_CONST=16,LINK_D=220,LIFE=1800;
       document.addEventListener('click',e=>{consts.push({x:e.clientX,y:e.clientY,phase:Math.random()*Math.PI*2,age:0});if(consts.length>MAX_CONST)consts.shift()});
-      function drawSparks(){
-        for(let i=consts.length-1;i>=0;i--){consts[i].age++;if(consts[i].age>LIFE)consts.splice(i,1)}
-        for(let i=0;i<consts.length;i++)for(let j=i+1;j<consts.length;j++){const dx=consts[i].x-consts[j].x,dy=consts[i].y-consts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<LINK_D){const fa=Math.min(consts[i].age,consts[j].age,LIFE-consts[i].age,LIFE-consts[j].age),fade=Math.min(1,fa/60);ctx.beginPath();ctx.moveTo(consts[i].x,consts[i].y);ctx.lineTo(consts[j].x,consts[j].y);ctx.strokeStyle=`rgba(255,255,255,${.18*(1-d/LINK_D)*fade})`;ctx.lineWidth=.7;ctx.stroke()}}
-        consts.forEach(c=>{c.phase+=.03;const fade=Math.min(1,c.age/60,(LIFE-c.age)/60),a=(0.55+Math.sin(c.phase)*.3)*fade,grd=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,8);grd.addColorStop(0,`rgba(255,255,255,${a*.4})`);grd.addColorStop(1,'rgba(255,255,255,0)');ctx.beginPath();ctx.arc(c.x,c.y,8,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();ctx.beginPath();ctx.arc(c.x,c.y,1.8,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill()});
-      }
-      function draw(){
-        ctx.clearRect(0,0,W,H);
-        layers.forEach(layer=>{
-          layer.forEach(p=>{const dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);if(d<200&&d>0){const f=(200-d)/200;p.vx-=(dx/d)*f*p.rep*4;p.vy-=(dy/d)*f*p.rep*4;if(d<8){p.x=Math.random()*W;p.y=Math.random()*H;p.vx=p.bvx;p.vy=p.bvy}}p.vx+=(p.bvx-p.vx)*.02;p.vy+=(p.bvy-p.vy)*.02;p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;p.phase+=p.freq;p.a=Math.max(0,p.ba+Math.sin(p.phase)*p.amp);ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,220,220,${p.a})`;ctx.fill()});
-          for(let i=0;i<layer.length;i++)for(let j=i+1;j<layer.length;j++){const dx=layer[i].x-layer[j].x,dy=layer[i].y-layer[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<layer[i].lnD){ctx.beginPath();ctx.moveTo(layer[i].x,layer[i].y);ctx.lineTo(layer[j].x,layer[j].y);ctx.strokeStyle=`rgba(200,200,200,${layer[i].lnA*(1-d/layer[i].lnD)})`;ctx.lineWidth=layer[i].r*.4;ctx.stroke()}}
-        });
-        drawSparks();requestAnimationFrame(draw);
-      }
+      function drawSparks(){for(let i=consts.length-1;i>=0;i--){consts[i].age++;if(consts[i].age>LIFE)consts.splice(i,1)}for(let i=0;i<consts.length;i++)for(let j=i+1;j<consts.length;j++){const dx=consts[i].x-consts[j].x,dy=consts[i].y-consts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<LINK_D){const fa=Math.min(consts[i].age,consts[j].age,LIFE-consts[i].age,LIFE-consts[j].age),fade=Math.min(1,fa/60);ctx.beginPath();ctx.moveTo(consts[i].x,consts[i].y);ctx.lineTo(consts[j].x,consts[j].y);ctx.strokeStyle=`rgba(255,255,255,${.18*(1-d/LINK_D)*fade})`;ctx.lineWidth=.7;ctx.stroke()}}consts.forEach(c=>{c.phase+=.03;const fade=Math.min(1,c.age/60,(LIFE-c.age)/60),a=(0.55+Math.sin(c.phase)*.3)*fade,grd=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,8);grd.addColorStop(0,`rgba(255,255,255,${a*.4})`);grd.addColorStop(1,'rgba(255,255,255,0)');ctx.beginPath();ctx.arc(c.x,c.y,8,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();ctx.beginPath();ctx.arc(c.x,c.y,1.8,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill()})}
+      function draw(){ctx.clearRect(0,0,W,H);layers.forEach(layer=>{layer.forEach(p=>{const dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);if(d<200&&d>0){const f=(200-d)/200;p.vx-=(dx/d)*f*p.rep*4;p.vy-=(dy/d)*f*p.rep*4;if(d<8){p.x=Math.random()*W;p.y=Math.random()*H;p.vx=p.bvx;p.vy=p.bvy}}p.vx+=(p.bvx-p.vx)*.02;p.vy+=(p.bvy-p.vy)*.02;p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;p.phase+=p.freq;p.a=Math.max(0,p.ba+Math.sin(p.phase)*p.amp);ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,220,220,${p.a})`;ctx.fill()});for(let i=0;i<layer.length;i++)for(let j=i+1;j<layer.length;j++){const dx=layer[i].x-layer[j].x,dy=layer[i].y-layer[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<layer[i].lnD){ctx.beginPath();ctx.moveTo(layer[i].x,layer[i].y);ctx.lineTo(layer[j].x,layer[j].y);ctx.strokeStyle=`rgba(200,200,200,${layer[i].lnA*(1-d/layer[i].lnD)})`;ctx.lineWidth=layer[i].r*.4;ctx.stroke()}}});drawSparks();requestAnimationFrame(draw);}
       draw();
     })();
 
-    // CURSOR
+    // ── CURSEUR ───────────────────────────────────────────────────────────────
     const cur = document.getElementById('cur');
     const curF = document.getElementById('cur-f');
     let cmx=0,cmy=0,cfx=0,cfy=0;
     document.addEventListener('mousemove',e=>{cmx=e.clientX;cmy=e.clientY;cur.style.left=cmx+'px';cur.style.top=cmy+'px'});
+    // anneau extérieur avec lag (lerp 10%) pour effet de traînée
     (function tick(){cfx+=(cmx-cfx)*.1;cfy+=(cmy-cfy)*.1;curF.style.left=cfx+'px';curF.style.top=cfy+'px';requestAnimationFrame(tick)})();
     document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>cur.classList.add('big'));el.addEventListener('mouseleave',()=>cur.classList.remove('big'))});
 
-    // BURGER MENU
+    // ── BURGER MENU ───────────────────────────────────────────────────────────
     const burger = document.querySelector('.n-burger');
     const mobileMenu = document.querySelector('.n-mobile-menu');
     burger.addEventListener('click', () => {
@@ -597,6 +583,7 @@
       mobileMenu.classList.toggle('open');
       document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
     });
+    // ferme le menu mobile au clic sur un lien
     document.querySelectorAll('.n-mob-link, .n-mobile-sub a').forEach(a => {
       a.addEventListener('click', () => {
         burger.classList.remove('open');
@@ -605,6 +592,4 @@
       });
     });
   </script>
-
-
 </body></html>
