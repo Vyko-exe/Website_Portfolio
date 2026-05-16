@@ -1,0 +1,36 @@
+IMAGES HEIC À CONVERTIR EN JPG
+→ cloudconvert.com/heic-to-jpg
+→ Remettre dans images/Traditional/ puis ajouter dans traditional.html
+
+images/Traditional/IMG_0535.heic
+images/Traditional/IMG_0536.HEIC
+images/Traditional/IMG_0537.HEIC
+images/Traditional/IMG_0538.heic
+images/Traditional/IMG_0539.heic
+images/Traditional/IMG_0540.heic
+images/Traditional/IMG_0542.heic
+images/Traditional/IMG_0793.heic
+images/Traditional/IMG_0892.heic
+images/Traditional/IMG_0984.heic
+images/Traditional/IMG_1030.heic
+images/Traditional/IMG_1033.heic
+images/Traditional/IMG_1124.heic
+images/Traditional/IMG_1134.heic
+images/Traditional/IMG_1253.heic
+images/Traditional/IMG_1270.heic
+images/Traditional/IMG_1310.heic
+images/Traditional/IMG_1311.heic
+images/Traditional/IMG_1423.heic
+images/Traditional/IMG_8056.heic
+images/Traditional/IMG_8087.heic
+images/Traditional/IMG_8374.heic
+images/Traditional/IMG_9427.heic
+images/Traditional/IMG_9636.heic
+
+UNE FOIS CONVERTIES, ajoute un bloc par image dans traditional.html :
+
+<div class="thumb" data-title="68">
+  <div class="thumb-img" data-bg="images/Traditional/IMG_0535.jpg"></div>
+  <div class="thumb-ov"></div>
+  <div class="thumb-label">68</div>
+</div>

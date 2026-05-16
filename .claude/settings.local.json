@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(magick --version)",
+      "Bash(ffmpeg -version)",
+      "Bash(ffmpeg -i IMG_0535.heic test_out.jpg)",
+      "Bash(python -c \"from PIL import Image; print\\('Pillow OK'\\)\")",
+      "Bash(python -c \"import pillow_heif; print\\('pillow-heif OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import pillow_heif; print\\('OK'\\)\")",
+      "Bash(python -c ' *)"
+    ]
+  }
+}
