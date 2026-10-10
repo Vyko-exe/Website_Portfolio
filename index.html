@@ -1,786 +1,515 @@
 <!DOCTYPE html>
-<html lang="en" class=""><head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Victor Dalbin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Playfair+Display:ital,wght@0,400;1,400&amp;family=Tenor+Sans&amp;family=Open+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="Favicon.png">
-  <style>@font-face{font-family:'Rockybilly';src:url('fonts/Rockybilly.ttf') format('truetype');font-weight:normal;font-style:normal}</style>
-  <style>
-    /* ── RESET & VARIABLES ────────────────────────────────────────────────── */
-    /* Supprime les marges/padding par défaut sur tous les éléments */
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-
-    /* Palette de couleurs globale — modifier ici pour changer le thème */
-    :root{
-      --black:#0d0d0d;          /* fond principal */
-      --dark1:#141414;          /* fond légèrement plus clair */
-      --dark2:#1c1c1c;          /* fond encore plus clair */
-      --mid:#5a5a5a;            /* texte secondaire / gris moyen */
-      --light:#a0a0a0;          /* texte tertiaire */
-      --white:#e8e8e8;          /* texte principal / blanc cassé */
-      --rule:rgba(255,255,255,.07); /* lignes de séparation subtiles */
-    }
-
-    /* scroll-behavior:smooth → défilement fluide sur les ancres (#hero, #works…) */
-    /* cursor:none → on cache le curseur natif pour utiliser le curseur custom (#cur) */
-    html{scroll-behavior:smooth;cursor:none}
-    body{background:var(--black);color:var(--white);font-family:'Tenor Sans',sans-serif;overflow-x:hidden}
-
-    /* ── GRAIN ─────────────────────────────────────────────────────────────── */
-    /* Superposition d'un bruit SVG en position:fixed pour donner une texture
-       granuleuse à toute la page. opacity:.05 = très subtil, pointer-events:none
-       = ne bloque pas les clics. z-index:1000 = au-dessus de tout le contenu. */
-    body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
-
-    /* ── CURSEUR CUSTOM ─────────────────────────────────────────────────────── */
-    /* #cur = petit point blanc (8px) qui suit exactement la souris.
-       mix-blend-mode:difference → s'inverse par rapport au fond (blanc sur noir = noir sur blanc).
-       La classe .big (ajoutée en JS au survol de liens) l'agrandit à 48px. */
-    #cur{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .3s,height .3s}
-    /* #cur-f = grand cercle vide (40px) qui suit la souris avec un léger retard (lerp en JS) */
-    #cur-f{position:fixed;top:0;left:0;width:40px;height:40px;border:1px solid rgba(232,232,232,.25);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
-    #cur.big{width:48px;height:48px}
-
-    /* ── LOADER ─────────────────────────────────────────────────────────────── */
-    /* Écran de chargement plein écran, au-dessus de tout (z-index:8000).
-       La classe .out (ajoutée en JS après 1.8s) le fait disparaître en fondu. */
-    #loader{position:fixed;inset:0;background:var(--black);z-index:8000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s}
-    #loader.out{opacity:0;visibility:hidden}
-    /* Le nom apparaît lettre par lettre grâce à l'animation ldUp */
-    .ld-name{font-family:'Rockybilly',serif;font-size:clamp(3.5rem,6vw,4rem);letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;line-height:02.3}
-    .ld-name span{display:block;opacity:0;transform:translateY(30px);animation:ldUp .9s cubic-bezier(.16,1,.3,1) forwards}
-    .ld-name .w2{animation-delay:.14s;color:var(--mid)} /* "Dalbin" décalé de 0.14s */
-    @keyframes ldUp{to{opacity:1;transform:translateY(0)}}
-    /* Barre de progression animée sous le nom */
-    .ld-bar{margin-top:2.5rem;width:160px;height:1px;background:rgba(232,232,232,.12);overflow:hidden}
-    .ld-bar::after{content:'';display:block;height:100%;background:var(--white);transform:translateX(-100%);animation:ldBar 1.3s cubic-bezier(.16,1,.3,1) .5s forwards}
-    @keyframes ldBar{to{transform:translateX(100%)}}
-    /* Canvas des particules en arrière-plan fixe, z-index:0 = sous tout */
-    #bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
-
-    /* ── NAVIGATION ─────────────────────────────────────────────────────────── */
-    /* La nav est fixe en haut. Par défaut transparent ; la classe .stuck
-       (ajoutée en JS quand scrollY > 60px) ajoute un fond flouté. */
-    nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:1.6rem 4rem;display:flex;align-items:center;justify-content:space-between;transition:padding .4s,background .4s,border-color .4s;border-bottom:1px solid transparent}
-    nav.stuck{padding:1rem 4rem;background:rgba(13,13,13,.78);backdrop-filter:blur(14px);border-color:var(--rule)}
-    /* Logo caché au départ (opacity:0) → visible uniquement quand la nav est "stuck" */
-    .n-logo{font-family:'Rockybilly',serif;font-weight:400;font-size:1rem;letter-spacing:.02em;color:var(--white);text-decoration:none;display:inline-block;margin-top:6px;opacity:0;transition:opacity .4s ease}
-    nav.stuck .n-logo{opacity:1}
-    .n-logo em{font-style:normal;color:var(--mid)}
-    .n-links{display:flex;gap:2.8rem;list-style:none;align-items:center}
-    /* Liens nav : uppercase + espacement large pour le style éditorial */
-    .n-links a{font-family:'Tenor Sans',sans-serif;font-size:.58rem;font-weight:400;letter-spacing:.28em;text-transform:uppercase;color:rgba(232,232,232,.45);text-decoration:none;transition:color .3s;position:relative}
-    /* Soulignement animé via pseudo-élément ::after (width:0 → 100% au hover) */
-    .n-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--white);transition:width .35s}
-    .n-links a:hover{color:var(--white)}
-    .n-links a:hover::after{width:100%}
-    /* Dropdown "Works" : affiché au hover grâce à opacity + pointer-events */
-    .n-drop{position:relative}
-    .n-drop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-6px);min-width:140px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;background:rgba(13,13,13,.96);backdrop-filter:blur(14px);padding:16px 0 10px}
-    .n-drop-menu::before{display:none}
-    .n-drop-menu a{display:block;padding:8px 20px;font-family:'Tenor Sans',sans-serif;font-size:.5rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,232,232,.35);text-decoration:none;transition:color .2s;text-align:center}
-    .n-drop-menu a::after{display:none}
-    .n-drop-menu a:hover{color:var(--white)}
-    .n-drop:hover .n-drop-menu{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-    /* Bouton "Contact" : bordure + fond blanc au hover */
-    .n-cta{border:1px solid rgba(232,232,232,.35) !important;padding:.45rem 1.3rem;font-family:'Tenor Sans',sans-serif;transition:background .3s,color .3s,border-color .3s !important}
-    .n-cta:hover{background:var(--white) !important;color:var(--black) !important;border-color:var(--white) !important}
-    .n-cta::after{display:none !important}
-    /* Toutes les sections font au moins 100vh et créent un contexte d'empilement (z-index:3) */
-    section{min-height:100vh;position:relative;overflow:hidden;z-index:3}
-
-    /* ── SECTION HERO ───────────────────────────────────────────────────────── */
-    #hero{display:flex;align-items:center;justify-content:center;padding-top:80px;overflow:visible}
-    .hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center}
-    /* Titre principal : démarre invisible (opacity:0), animé à l'entrée avec délai 0.35s */
-    h1.h-name{font-family:'Rockybilly',serif;font-weight:400;font-size:clamp(2.5rem,5.5vw,5.5rem);line-height:1.05;color:var(--white);opacity:0;animation:up .9s ease .35s forwards}
-    h1.h-name em{display:block;font-style:italic;color:var(--mid);font-size:.46em;letter-spacing:.14em;margin-top:45px;font-family:'Playfair Display',serif}
-    /* Séparateur vertical entre le titre et la description */
-    .h-sep{width:1px;height:56px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent);margin:48px auto 0;opacity:0;animation:fadein .8s ease 1s forwards}
-    .h-desc{margin-top:44px;font-size:.68rem;letter-spacing:.14em;line-height:2.2;color:var(--mid);opacity:0;animation:up .7s ease .65s forwards}
-    .h-cta{margin-top:48px;display:flex;gap:14px;opacity:0;animation:up .7s ease .85s forwards}
-    /* Deux variantes de bouton : blanc (.btn-w) et fantôme (.btn-g) */
-    .btn{font-size:.57rem;letter-spacing:.26em;text-transform:uppercase;text-decoration:none;padding:12px 30px;border:1px solid;transition:background .3s,color .3s,border-color .3s}
-    .btn-w{border-color:var(--white);color:var(--white);background:transparent}
-    .btn-w:hover{background:var(--white);color:var(--black)}
-    .btn-g{border-color:rgba(255,255,255,.18);color:var(--mid);background:transparent}
-    .btn-g:hover{border-color:var(--mid);color:var(--white)}
-    /* "Vyko" géant en filigrane en bas à droite, quasi invisible (opacity:.05) */
-    .h-ghost{position:absolute;right:2rem;bottom:3rem;font-family:'Rockybilly',serif;font-size:clamp(7rem,11vw,14rem);font-weight:400;color:rgba(232,232,232,.05);line-height:1.2;pointer-events:none;user-select:none;white-space:nowrap;z-index:1}
-    /* Indicateur de scroll "Scroll ↓" avec une ligne animée */
-    .h-scroll{position:absolute;bottom:36px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mid);opacity:0;animation:fadein .8s ease 1.4s forwards}
-    .h-scroll-line{width:1px;height:56px;background:var(--rule);position:relative;overflow:hidden}
-    /* Lumière qui glisse de haut en bas sur la ligne de scroll */
-    .h-scroll-line::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--light);animation:sp 2s ease-in-out 1.8s infinite}
-    @keyframes sp{0%{top:-100%}100%{top:100%}}
-    @media(max-width:768px){.h-scroll{right:24px}}
-
-    /* ── SECTION WORKS ──────────────────────────────────────────────────────── */
-    #works{display:flex;flex-direction:column;justify-content:center;padding:100px 56px 64px}
-    .sec-hd{display:flex;align-items:center;gap:20px;margin-bottom:36px}
-
-    /* ── DEMO REEL ──────────────────────────────────────────────────────────── */
-    /* Le reel a 3 états : normal, :hover (zoom + couleurs), .playing (vidéo visible).
-       aspect-ratio:16/9 garantit le format même sans hauteur fixe. */
-    .reel-section{margin-top:52px}
-    .reel-inner{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;width:min(2000px,100%);margin:0 auto;background:#000}
-    .reel-thumb{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%);transition:transform .8s cubic-bezier(.16,1,.3,1),filter .6s,opacity .4s}
-    .reel-inner:hover .reel-thumb{transform:scale(1.03);filter:grayscale(0%)}
-    /* Quand la vidéo joue, la miniature disparaît */
-    .reel-inner.playing .reel-thumb{opacity:0;pointer-events:none}
-    /* Vignette radiale qui assombrit les bords pour mettre le centre en valeur */
-    .reel-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(13,13,13,.82) 100%);transition:opacity .4s;pointer-events:none}
-    .reel-inner.playing .reel-vignette{opacity:0}
-    .reel-label{position:absolute;top:1.4rem;left:50%;transform:translateX(-50%);font-family:'Rockybilly',serif;font-size:clamp(.9rem,1.6vw,1.2rem);color:rgba(232,232,232,.8);white-space:nowrap;letter-spacing:.04em;text-shadow:0 2px 16px rgba(0,0,0,.6);transition:opacity .4s;pointer-events:none}
-    .reel-inner.playing .reel-label{opacity:0}
-    /* Bouton play centré : deux textes (.play-a "play" et .play-b "demoreel")
-       qui se swappent au hover avec une animation de slide vertical */
-    .reel-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Rockybilly',serif;font-size:clamp(1.8rem,3vw,2.6rem);letter-spacing:.06em;color:rgba(232,232,232,1);text-shadow:0 2px 20px rgba(0,0,0,.6);white-space:nowrap;transition:color .35s,opacity s;cursor:none}
-    .reel-play:hover{color:var(--white)}
-    .reel-inner.playing .reel-play{opacity:0;pointer-events:none}
-    .reel-play-a{display:block;text-align:center;transition:transform .45s cubic-bezier(,1,.3,1),opacity .35s}
-    .reel-play-b{position:absolute;top:0;left:50%;transform:translateX(-50%) translateY(36px);opacity:0;white-space:nowrap;transition:transform .45s cubic-bezier(.16,1,.3,1),opacity .35s}
-    .reel-play:hover .reel-play-a{transform:translateY(-36px);opacity:0}
-    .reel-play:hover .reel-play-b{transform:translateX(-50%) translateY(0);opacity:1}
-    /* L'iframe YouTube est invisible jusqu'au clic → playReel() lui assigne le src et ajoute .playing */
-    .reel-iframe{position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .4s;pointer-events:none}
-    .reel-inner.playing .reel-iframe{opacity:1;pointer-events:auto}
-    .sec-num{font-size:.56rem;letter-spacing:.3em;color:var(--mid)}
-    .sec-ttl{font-family:'Tenor Sans',sans-serif;font-weight:400;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--white)}
-    .sec-ttl em{font-style:normal;color:var(--mid)}
-    .sec-ln{flex:1;height:1px;background:var(--rule)}
-    .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .cat-card{position:relative;aspect-ratio:3/4;overflow:hidden;text-decoration:none;color:inherit;display:block;transition:transform .5s cubic-bezier(.25,.46,.45,.94),filter 1.6s cubic-bezier(.16,1,.3,1)}
-    .cat-card:nth-child(1){background:#161616}.cat-card:nth-child(2){background:#121212}.cat-card:nth-child(3){background:#141414}
-    .cat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.03) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s cubic-bezier(.25,.46,.45,.94)}
-    .cat-card:hover::after{transform:translateX(100%)}
-
-    /* Dim siblings on hover */
-    .cat-grid:has(.cat-card:hover) .cat-card:not(:hover){filter:brightness(.62)}
-
-    /* Background image per card */
-    .cat-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:1;filter:grayscale(0%);transition:transform .6s cubic-bezier(.25,.46,.45,.94)}
-    .cat-card:hover .cat-img{transform:scale(1.05)}
-
-    .cat-bgn{position:absolute;bottom:-24px;right:-8px;font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(8rem,13vw,13rem);color:rgba(255,255,255,.022);pointer-events:none;user-select:none;line-height:1;transition:transform .6s cubic-bezier(.25,.46,.45,.94),color .5s}
-    .cat-card:hover .cat-bgn{transform:scale(1.04) translateY(-6px);color:rgba(255,255,255,.055)}
-    .cat-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,13,13,.95) 0%,rgba(13,13,13,.3) 55%,transparent 100%);transition:opacity .4s}
-    .cat-bot{position:absolute;bottom:0;left:0;right:0;padding:28px 24px;z-index:2;transform:translateY(4px);transition:transform .45s cubic-bezier(.25,.46,.45,.94)}
-    .cat-card:hover .cat-bot{transform:translateY(0)}
-    .cat-line{display:block;width:0;height:1px;background:rgba(255,255,255,.3);margin-bottom:12px;transition:width .45s cubic-bezier(.25,.46,.45,.94) .05s}
-    .cat-card:hover .cat-line{width:36px}
-    .cat-ttl{font-family:'Tenor Sans',sans-serif;font-weight:400;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--white);line-height:1.1}
-    .cat-sub{margin-top:10px;font-size:.54rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mid);line-height:1.9;opacity:0;transform:translateY(6px);transition:opacity .4s .08s,transform .4s .08s}
-    .cat-card:hover .cat-sub{opacity:1;transform:translateY(0)}
-
-    /* ── SECTION ABOUT ──────────────────────────────────────────────────────── */
-    /* Grille 50/50 : colonne gauche = photo, colonne droite = texte */
-    #about{display:grid;grid-template-columns:1fr 1fr}
-    .ab-left{position:relative;overflow:hidden;background:transparent}
-    .ab-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-    .ab-ph-box{width:190px;height:250px;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;position:relative}
-    .ab-ph-box::after{content:'';position:absolute;top:10px;left:10px;right:-10px;bottom:-10px;border:1px solid rgba(255,255,255,.03)}
-    .ab-ph-box span{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--mid);text-align:center;line-height:2.2}
-    /* Label vertical rotaté à gauche de la photo */
-    .ab-lbl{position:absolute;bottom:28px;left:28px;font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);writing-mode:vertical-rl;transform:rotate(180deg)}
-    .ab-right{padding:96px 64px;display:flex;flex-direction:column;justify-content:center}
-    .ab-eye{font-size:.56rem;letter-spacing:.35em;text-transform:uppercase;color:var(--mid);margin-bottom:28px}
-    .ab-h{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(1.7rem,2.8vw,2.6rem);line-height:1.22;color:var(--white);margin-bottom:28px}
-    .ab-h em{font-style:italic;color:var(--mid)}
-    .ab-p{font-size:.95rem;color:var(--light);line-height:2;max-width:480px}
-    .ab-p+.ab-p{margin-top:14px}
-    /* Grille de stats (3 colonnes séparées par des règles verticales) */
-    .ab-stats{margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);padding-top:28px}
-    .st{padding-right:18px}.st+.st{border-left:1px solid var(--rule);padding-left:18px}
-    .st-n{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:400;color:var(--white);display:block}
-    .st-l{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);margin-top:3px}
-    .ab-links{margin-top:40px;display:flex;flex-wrap:wrap;gap:8px}
-    .ab-link{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);text-decoration:none;border:1px solid var(--rule);padding:7px 14px;transition:color .25s,border-color .25s}
-    .ab-link:hover{color:var(--white);border-color:rgba(255,255,255,.22)}
-
-   
-    /* ── SECTION CONTACT ────────────────────────────────────────────────────── */
-    /* Fond clair crème (#f7f3ed) qui contraste avec le reste sombre du site */
-    #contact{display:flex;flex-direction:column;overflow:visible;background:#f7f3ed;min-height:0}
-    #contact .sec-giant-ttl{color:#0d0d0d;margin-bottom:0}
-    .ct-mail{font-family:'Rockybilly',serif;font-size:clamp(1rem,2vw,1.5rem);color:#1a1a1a;text-decoration:none;transition:opacity .3s;display:inline-block}
-    .ct-mail:hover{opacity:.5}
-    /* Icônes réseaux sociaux en SVG inline (ArtStation, Instagram, LinkedIn) */
-    .ct-soc{display:flex;align-items:center;gap:28px;list-style:none}
-    .ct-soc a{color:#1a1a1a;text-decoration:none;transition:opacity .3s;display:flex}
-    .ct-soc a:hover{opacity:.4}
-    .ct-soc svg{width:26px;height:26px}
-    /* Footer sombre sous la section claire */
-    footer{background:var(--black);border-top:1px solid var(--rule);padding:22px 56px;display:flex;justify-content:space-between;align-items:center}
-    footer p,footer span{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mid)}
-
-    /* ── TITRES GÉANTS ──────────────────────────────────────────────────────── */
-    /* Bebas Neue + clamp → titre fluide entre 5rem (mobile) et 22rem (grand écran) */
-    .sec-giant-ttl{font-family:'Bebas Neue',sans-serif;font-style:normal;font-weight:400;font-size:clamp(5rem,16vw,22rem);line-height:.85;color:var(--white);letter-spacing:.03em;text-transform:uppercase;margin-bottom:40px;display:block}
-    .sec-giant-ttl.right{text-align:right}
-
-    /* ── ANIMATIONS GLOBALES ────────────────────────────────────────────────── */
-    @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes fadein{from{opacity:0}to{opacity:1}}
-
-    /* ── SYSTÈME DE RÉVÉLATION AU SCROLL ───────────────────────────────────── */
-    /* Les éléments .reveal démarrent cachés. L'IntersectionObserver (en JS)
-       ajoute la classe .in quand ils entrent dans le viewport → animation d'entrée.
-       Variantes directionnelles : from-left, from-right, scale-in */
-    .reveal{opacity:0;transform:translateY(32px);transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1)}
-    .reveal.from-left{transform:translateX(-56px)}
-    .reveal.from-right{transform:translateX(56px)}
-    .reveal.scale-in{transform:translateY(24px) scale(.97)}
-    .reveal.in{opacity:1;transform:none}
-
-    /* ── PARALLAXE & GPU ────────────────────────────────────────────────────── */
-    /* will-change:transform prévient le navigateur que ces éléments seront animés
-       → il les place sur leur propre couche GPU pour des animations plus fluides */
-    .hero-inner,.h-ghost{will-change:transform}
-    .ab-photo-wrap{will-change:transform}
-    .reveal.in{opacity:1;transform:none}
-    /* Délais en cascade pour les groupes d'éléments (.d1, .d2…) */
-    .d1{transition-delay:.08s}.d2{transition-delay:.18s}.d3{transition-delay:.30s}.d4{transition-delay:.42s}.d5{transition-delay:.54s}
-
-    /* ── PHOTO ABOUT ────────────────────────────────────────────────────────── */
-    .ab-photo-wrap{position:relative;display:inline-block}
-    /* Coins décoratifs en L autour de la photo (::before = haut-gauche, ::after = bas-droite) */
-    .ab-photo-wrap::before{
-      content:'';position:absolute;
-      top:-10px;left:-10px;
-      width:20px;height:20px;
-      border-top:1px solid rgba(255,255,255,.4);
-      border-left:1px solid rgba(255,255,255,.4);
-      pointer-events:none;
-    }
-    .ab-photo-wrap::after{
-      content:'';position:absolute;
-      bottom:-10px;right:-10px;
-      width:20px;height:20px;
-      border-bottom:1px solid rgba(255,255,255,.4);
-      border-right:1px solid rgba(255,255,255,.4);
-      pointer-events:none;
-    }
-    /* Au survol, la photo repasse en couleurs (override le filtre inline) */
-    .ab-photo:hover{filter:grayscale(0%) contrast(1) !important}
-
-    /* BURGER (desktop: hidden) */
-    .n-burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:201}
-    .n-burger span{display:block;width:22px;height:1px;background:var(--white);transition:transform .3s,opacity .3s}
-    .n-burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-    .n-burger.open span:nth-child(2){opacity:0}
-    .n-burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-
-    /* MOBILE MENU (desktop: hidden) */
-    .n-mobile-menu{display:none;position:fixed;inset:0 0 0 0;background:rgba(13,13,13,.97);backdrop-filter:blur(16px);z-index:199;flex-direction:column;align-items:center;justify-content:center;gap:28px}
-    .n-mobile-menu.open{display:flex}
-    .n-mob-link{font-size:.75rem;letter-spacing:.28em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
-    .n-mob-link:hover,.n-mob-link:active{color:var(--white)}
-    .n-mobile-sub{display:flex;flex-direction:column;align-items:center;gap:14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:18px 0;width:70%}
-    .n-mobile-sub a{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s}
-    .n-mobile-sub a:hover,.n-mobile-sub a:active{color:var(--white)}
-
-    @media(max-width:768px){
-      .sec-giant-ttl{font-size:clamp(3rem,16vw,5rem);margin-bottom:28px}
-
-      /* NAV */
-      nav,nav.stuck{padding:.9rem 20px}
-      .n-links{display:none}
-      .n-burger{display:flex}
-
-      #hero{min-height:100svh;padding:80px 24px 60px}
-
-      /* HERO */
-      .h-cta{flex-direction:column;align-items:center;gap:10px}
-      .h-sep{display:none}
-      h1.h-name em{margin-top:20px}
-
-      /* WORKS */
-      #works{padding:56px 20px 40px}
-      .cat-grid{grid-template-columns:1fr;gap:8px}
-      .cat-card{aspect-ratio:16/9}
-      .cat-bgn{display:none}
-      .cat-bot{transform:none !important}
-      .cat-line{width:36px !important}
-      .cat-sub{opacity:1 !important;transform:none !important}
-
-      /* ABOUT — override inline styles */
-      #about>div:first-child{padding:56px 20px 20px !important}
-      #about>div:last-child{flex-direction:column !important}
-      #about>div:last-child>div:first-child{padding:32px 20px !important}
-      .ab-photo{width:100% !important;height:auto !important;max-width:300px}
-      #about>div:last-child>div:last-child{grid-template-columns:1fr !important;display:flex !important;flex-direction:column !important}
-      #about>div:last-child>div:last-child>div:first-child{padding:36px 20px !important;border-right:none !important;border-bottom:1px solid var(--rule) !important}
-      #contact>div:first-child{padding:40px 20px 0 !important}
-      #contact>div:last-child{flex-direction:column !important;padding:24px 20px 48px !important;gap:24px !important;align-items:flex-start !important}
-      #contact .ct-soc{flex-direction:column !important;gap:14px !important}
-      .ab-stats{grid-template-columns:1fr !important}
-      .st+.st{border-left:none !important;border-top:1px solid var(--rule);padding-left:0 !important;padding-top:14px;margin-top:14px}
-
-      /* FOOTER */
-      footer{padding:16px 20px;flex-direction:column;gap:6px;text-align:center}
-    }
-
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="fonts/Tritopani.otf" as="font" type="font/otf" crossorigin>
+  <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}if('onpagereveal' in window&&/^https?:/.test(location.protocol))document.documentElement.classList.add('vt')</script>
+  <script src="theme.js" defer></script>
+  <script src="smooth.js" defer></script>
 </head>
-<body class="">
+<body class="has-side">
 
-  <div id="cur" style="left: 2357px; top: 1285px;" class="big"></div>
-  <div id="cur-f" style="left: 2357.25px; top: 1285.8px;"></div>
-
-  <!-- LOADER -->
-  <div id="loader">
-    <div class="ld-name">
-      <span>Victor</span>
-      <span class="w2">Dalbin</span>
+  <div id="intro">
+    <div id="intro-art">
+      <canvas id="intro-paint"></canvas>
     </div>
-    <div class="ld-bar"></div>
+    <div class="intro-sign" aria-hidden="true" data-text="Victor Dalbin">Victor Dalbin</div>
+    <button class="intro-btn" id="intro-btn">Welcome to my world</button>
   </div>
 
-  <canvas id="bg-canvas" width="2560" height="1305"></canvas>
-
-
-
-  <!-- NAV -->
-  <nav id="nav" class="stuck">
-    <a href="/" class="n-logo" onclick="event.preventDefault();window.scrollTo({top:0,behavior:'smooth'})">Victor Dalbin<em>.</em></a>
-    <ul class="n-links">
-      <li><a href="#hero">Home</a></li>
-      <li class="n-drop">
-        <a href="#works">Works</a>
-        <div class="n-drop-menu">
-          <a href="digital-2d.html">Digital 2D</a>
-          <a href="digital-3d.html">Digital 3D</a>
-          <a href="traditional.html">Traditional</a>
-        </div>
-      </li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#contact" class="n-cta">Contact</a></li>
-    </ul>
-    <button class="n-burger" aria-label="Menu"><span></span><span></span><span></span></button>
-  </nav>
-
-  <!-- MOBILE MENU -->
-  <div class="n-mobile-menu">
-    <a href="#hero" class="n-mob-link">Home</a>
-    <div class="n-mobile-sub">
-      <a href="#works" class="n-mob-link">Works</a>
-      <a href="digital-2d.html">Digital 2D</a>
-      <a href="digital-3d.html">Digital 3D</a>
-      <a href="traditional.html">Traditional</a>
-    </div>
-    <a href="#about" class="n-mob-link">About</a>
-    <a href="#contact" class="n-mob-link">Contact</a>
-  </div>
-
-  <!-- HERO -->
-  <section id="hero">
-    <div class="hero-inner">
-      <h1 class="h-name">
-        <span id="e-firstname">Victor Dalbin</span>
-        <em id="e-subtitle">Portfolio</em>
-      </h1>
-      <p class="h-desc" id="e-disciplines">Illustration &nbsp;·&nbsp; 3D Sculpting &nbsp;·&nbsp; Sketching</p>
-      <div class="h-cta">
-        <a href="#works" class="btn btn-w" id="e-btn1">View Works</a>
-        <a href="#contact" class="btn btn-g" id="e-btn2">Get in Touch</a>
-      </div>
-    </div>
-    <div class="h-scroll"><div class="h-scroll-line"></div><span>Scroll</span></div>
-    <span class="h-ghost">Vyko</span>
-  </section>
-
-  <!-- WORKS -->
-  <section id="works">
-    <h2 class="sec-giant-ttl reveal from-left scale-in in">Works</h2>
-    <div class="cat-grid">
-      <a href="digital-2d.html" class="cat-card reveal d1 in" id="cat-link-1" style="transition: transform 0.15s;">
-        <div class="cat-img" id="cat-img-1" style="background-image:url('images/Works/Digital2D.jpg')"></div>
-        <span class="cat-bgn">I</span>
-        <div class="cat-ov"></div>
-        <div class="cat-bot">
-          <span class="cat-line"></span>
-          <h3 class="cat-ttl" id="e-cat1title">Digital 2D</h3>
-          <p class="cat-sub" id="e-cat1sub">Digital painting · Concept art</p>
-        </div>
-      </a>
-      <a href="digital-3d.html" class="cat-card reveal d2 in" id="cat-link-2" style="transition: transform 0.15s; transform: perspective(900px) rotateY(0deg) rotateX(0deg) scale(1);">
-        <div class="cat-img" id="cat-img-2" style="background-image:url('images/Works/Digital3d.jpg')"></div>
-        <span class="cat-bgn">II</span>
-        <div class="cat-ov"></div>
-        <div class="cat-bot">
-          <span class="cat-line"></span>
-          <h3 class="cat-ttl" id="e-cat2title">Digital 3D</h3>
-          <p class="cat-sub" id="e-cat2sub">Digital sculpting · 3D modeling</p>
-        </div>
-      </a>
-      <a href="traditional.html" class="cat-card reveal d3 in" id="cat-link-3" style="transition: transform 0.15s; transform: perspective(900px) rotateY(0deg) rotateX(0deg) scale(1);">
-        <div class="cat-img" id="cat-img-3" style="background-image:url('images/Works/Traditional.jpg')"></div>
-        <span class="cat-bgn">III</span>
-        <div class="cat-ov"></div>
-        <div class="cat-bot">
-          <span class="cat-line"></span>
-          <h3 class="cat-ttl" id="e-cat3title">Traditional</h3>
-          <p class="cat-sub" id="e-cat3sub">Ink &amp; pencil · Sketchbooks · Studies</p>
-        </div>
-      </a>
-    </div>
-
-    <!-- DEMO REEL -->
-    <div class="reel-section reveal in">
-      <h2 class="sec-giant-ttl right reveal in">Demoreel</h2>
-      <div class="reel-inner" id="reel-player" onclick="playReel(this)">
-        <img class="reel-thumb" src="images/Digital3d/2025/Eclipse/06.jpg" alt="Demo Reel">
-        <div class="reel-vignette"></div>
-        <span class="reel-play"><span class="reel-play-a">play</span><span class="reel-play-b">demoreel</span></span>
-        <iframe class="reel-iframe" id="reel-iframe" allow="autoplay; encrypted-media" allowfullscreen=""></iframe>
-      </div>
-    </div>
-  </section>
-
-  <!-- ABOUT -->
-  <section id="about" style="display:flex;flex-direction:column;overflow:visible">
-    <div style="padding:72px 64px 40px">
-      <h2 class="sec-giant-ttl reveal from-left scale-in in">About</h2>
-    </div>
-    <div style="display:flex;flex:1">
-      <div class="reveal from-left in" style="flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:48px 48px 48px 100px">
-        <div class="ab-photo-wrap" style="transform: translateY(-80.8837px);">
-          <img class="ab-photo" src="images/photo-about/IMG_0031.JPG" style="width:420px;height:594px;object-fit:cover;object-position:center top;display:block;filter:grayscale(100%) contrast(1.05);transition:filter .6s ease">
-        </div>
-      </div>
-      <div class="reveal from-right d1 in" style="flex:1;display:flex;align-items:center;padding:64px">
-        <p class="ab-p reveal d2 in" id="e-about-p1">Hey ! I’m Victor Dalbin, also known as Vyko, a digital and traditional artist.
-Passionate about drawing, illustration, and 3D, I enjoy experimenting with different techniques and continuing to learn through my artistic practice.<br><br>For me, art, in all its forms, is a way to express what I feel.
-It’s a suspended moment where my ideas take shape and where I feel fully present.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- TRANSITION ABOUT → CONTACT -->
-  <!-- CONTACT -->
-  <section id="contact">
-    <div style="padding:64px 64px 0">
-      <h2 class="sec-giant-ttl right reveal from-right in">GET IN TOUCH</h2>
-    </div>
-    <div style="padding:40px 64px 64px;display:flex;align-items:center;justify-content:space-between">
-      <a href="mailto:vykodraw@gmail.com" class="ct-mail reveal d1 in">vykodraw@gmail.com</a>
-      <ul class="ct-soc reveal d2 in">
-        <li>
-          <a href="https://www.artstation.com/vyko" target="_blank" title="ArtStation">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 17.723l2.027 3.505h.001a2.424 2.424 0 0 0 2.164 1.333h13.457l-2.792-4.838H0zm24 .025c0-.484-.143-.935-.388-1.314L15.728 2.728a2.424 2.424 0 0 0-2.142-1.289H9.419L21.598 22.54l1.92-3.325c.378-.637.482-.919.482-1.467zm-11.129-3.462L7.428 4.858l-5.444 9.428h10.887z"></path></svg>
-          </a>
+  <!-- Colonne noire : signature en haut, menu en bas -->
+  <aside id="side">
+    <a href="index.html" class="s-sign">Victor<br>Dalbin</a>
+    <div class="s-bottom">
+      <ul class="s-menu">
+        <li class="s-main"><a href="index.html" class="active">Homepage</a></li>
+        <li class="s-group">
+          <a href="digital-2d.html" data-cat="d2">Digital 2D</a>
+          <a href="digital-3d.html" data-cat="d3">Digital 3D</a>
+          <a href="traditional.html" data-cat="tr">Traditional</a>
         </li>
-        <li>
-          <a href="https://www.instagram.com/vykowrld" target="_blank" title="Instagram">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"></circle></svg>
-          </a>
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/in/victordalbin/" target="_blank" title="LinkedIn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-          </a>
-        </li>
+        <li class="s-main"><a href="about.html" data-cat="ct">About &amp; Contact</a></li>
       </ul>
     </div>
-  </section>
+    <button class="theme-toggle" type="button">Night mode</button>
+  </aside>
 
-  <footer>
-    <p id="e-footer">© Victor Dalbin</p>
-    <span>All rights reserved</span>
-    <p>Made with care</p>
-  </footer>
+  <!-- Dernière œuvre en plein écran -->
+  <section id="stage" aria-label="Latest work">
+    <img src="images/Digital2d/2026/Lia.jpg" alt="Lia" class="on">
+    <img alt="">
+    <div class="stage-contact" aria-hidden="true">
+      <img src="images/photo-about/IMG_0031.JPG" alt="" class="sc-photo">
+      <div class="sc-text">
+        <p class="sc-hi">Victor Dalbin · Vyko</p>
+        <p class="sc-mail">vykodraw@gmail.com</p>
+        <p class="sc-soc">ArtStation · Instagram · LinkedIn</p>
+      </div>
+    </div>
+  </section>
 
 
   <script>
-    // ── PARTICULES EN ARRIÈRE-PLAN ────────────────────────────────────────────
-    // IIFE (fonction auto-invoquée) pour isoler les variables dans un scope privé.
-    // Dessine sur le <canvas id="bg-canvas"> en position fixed.
-    (function(){
-      const cv = document.getElementById('bg-canvas');
-      const ctx = cv.getContext('2d');
-      let W, H, pts;
-      let mx = -999, my = -999; // position souris (initialisée hors écran)
-      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    // Intro : fond blanc, l'illustration est "peinte" au pinceau quand on survole le bouton,
+    // clic = entrer (une seule fois par session)
+    (function () {
+      const intro = document.getElementById('intro');
+      const btn = document.getElementById('intro-btn');
+      let seen = false;
+      try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
+      if (seen) { intro.remove(); return; }
+      document.body.style.overflow = 'hidden';
 
-      // Redimensionne le canvas à la taille de la fenêtre
-      function resize(){ W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-      window.addEventListener('resize', resize);
-      resize();
+      const paint = createPaint(document.getElementById('intro-paint'), 'images/Digital2d/2026/Lia.jpg');
 
-      // 3 couches de profondeur : loin (petites/lentes), milieu, proche (grandes/rapides)
-      // Propriétés : n=nombre, r=rayon[min,max], spd=vitesse, a=opacité[min,max],
-      //              rep=force de répulsion souris, lnD=distance max des lignes, lnA=opacité lignes
-      const LAYERS = [
-        { n:32, r:[.2,.5],  spd:.06, a:[.06,.16], rep:.01, lnD:90,  lnA:.06 }, // loin  — petites, lentes, discrètes
-        { n:20, r:[.4,.9],  spd:.14, a:[.15,.35], rep:.04, lnD:110, lnA:.11 }, // milieu
-        { n:8,  r:[.9,1.8], spd:.28, a:[.35,.65], rep:.09, lnD:70,  lnA:.16 }, // proche — grandes, rapides, visibles
+      // survol souris, focus clavier ou (écrans tactiles) déclenchement automatique
+      let hover = false, focused = false, auto = false, shown = false;
+      function update() {
+        const want = hover || focused || auto;
+        if (want === shown) return;
+        shown = want;
+        intro.classList.toggle('reveal-bg', want);
+        want ? paint.start() : paint.stop();
+      }
+      btn.addEventListener('mouseenter', () => { hover = true; update(); });
+      btn.addEventListener('mouseleave', () => { hover = false; update(); });
+      btn.addEventListener('focus', () => { focused = true; update(); });
+      btn.addEventListener('blur', () => { focused = false; update(); });
+      if (window.matchMedia('(hover: none)').matches) setTimeout(() => { auto = true; update(); }, 700);
+
+      btn.addEventListener('click', () => {
+        try { sessionStorage.setItem('introSeen', '1'); } catch (e) {}
+        intro.classList.add('out');
+        document.body.style.overflow = '';
+        setTimeout(() => { paint.destroy(); intro.remove(); }, 1000);
+      });
+    })();
+
+
+    // Effet "peinture" : l'image est révélée par une suite de coups de pinceau tous différents
+    // (angle, longueur, largeur, courbure, pression, pinceau sec ou chargé). Le plan est tiré au hasard
+    // à chaque survol : chaque coup vise une zone encore vide, près de la peinture existante, jusqu'à
+    // couvrir l'écran. Chaque coup est une brosse de poils (dessinés avec l'image comme motif).
+    // Au départ de la souris le tout s'efface en fondu (CSS) puis repart d'une toile vierge.
+    function createPaint(canvas, src) {
+      const ctx = canvas.getContext('2d');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const img = new Image();
+      let ready = false, wanted = false;
+      let W = 0, H = 0, dpr = 1, cover = null, pattern = null;
+      let strokes = [], clock = 0, endTime = 0, phase = 'idle'; // idle | paint | settle | done
+      let settleFrames = 0, raf = 0, last = 0, resetTimer = 0, resizeTimer = 0;
+
+      const NB = 8;                       // classes d'épaisseur de poils (un seul stroke() par classe et par frame)
+      const BW = [];                      // épaisseur de chaque classe, en px canvas
+
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const smooth = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+      // bruit déterministe : les "trous" du pinceau sec ne changent pas d'une frame à l'autre
+      const hash = (a, b) => {
+        let h = (a ^ Math.imul(b, 0x9e3779b1)) | 0;
+        h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+        h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+        return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+      };
+      const EASES = [
+        x => 1 - Math.pow(1 - x, 3),      // geste vif qui freine
+        x => x * x * (3 - 2 * x),         // geste souple
+        x => 1 - Math.pow(1 - x, 1.6)
       ];
 
-      // Crée une particule avec des valeurs aléatoires dans les plages du calque
-      function mkPt(l){
-        const bvx=(Math.random()-.5)*l.spd, bvy=(Math.random()-.5)*l.spd; // vitesse de base
-        const ba = l.a[0]+Math.random()*(l.a[1]-l.a[0]); // opacité de base
-        return {
-          x:Math.random()*W, y:Math.random()*H,
-          vx:bvx, vy:bvy, bvx, bvy, // vx/vy = vitesse courante, bvx/bvy = vitesse de base (pour le lerp)
-          r: l.r[0]+Math.random()*(l.r[1]-l.r[0]),
-          ba, a: ba,
-          phase: Math.random()*Math.PI*2, // phase initiale pour le scintillement sinusoïdal
-          freq: 0.008+Math.random()*0.018, // fréquence du scintillement
-          amp: 0.2+Math.random()*0.45,     // amplitude du scintillement
-          rep: l.rep, lnD: l.lnD, lnA: l.lnA
-        };
+      // Image recadrée "cover" à la taille de l'écran, couleurs d'origine (sert de motif au pinceau)
+      function layout() {
+        const cw = canvas.clientWidth || innerWidth, ch = canvas.clientHeight || innerHeight;
+        // au plus ~3 millions de pixels (fluidité) : net sur téléphone, un peu allégé sur les grands écrans Retina
+        dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(3e6 / (cw * ch)));
+        W = canvas.width = Math.round(cw * dpr);
+        H = canvas.height = Math.round(ch * dpr);
+        for (let i = 0; i < NB; i++) BW[i] = (1 + 2 * i) * dpr;
+        cover = document.createElement('canvas');
+        cover.width = W; cover.height = H;
+        const c = cover.getContext('2d');
+        const k = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+        const w = img.naturalWidth * k, h = img.naturalHeight * k;
+        c.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+        pattern = ctx.createPattern(cover, 'no-repeat');
+        reset();
       }
 
-      const layers = LAYERS.map(l => Array.from({length:l.n}, ()=>mkPt(l)));
-      pts = layers.flat();
-
-      // ── CONSTELLATION AU CLIC ─────────────────────────────────────────────
-      // Chaque clic crée un nœud lumineux. Les nœuds proches (<220px) sont reliés
-      // par des lignes qui s'estompent progressivement avec l'âge.
-      const consts = [];
-      const MAX_CONST = 16;  // max 16 nœuds simultanés
-      const LINK_D = 220;    // distance max pour tracer une ligne entre deux nœuds
-      const LIFE = 1800;     // durée de vie d'un nœud en frames (~30s à 60fps)
-      document.addEventListener('click', e => {
-        consts.push({ x:e.clientX, y:e.clientY, phase:Math.random()*Math.PI*2, age:0 });
-        if(consts.length > MAX_CONST) consts.shift(); // supprime le plus ancien si dépassement
-      });
-      function drawSparks(){
-        // Vieillir et supprimer les nœuds expirés
-        for(let i=consts.length-1;i>=0;i--){ consts[i].age++; if(consts[i].age>LIFE) consts.splice(i,1); }
-        // Tracer les lignes entre nœuds proches
-        for(let i=0;i<consts.length;i++){
-          for(let j=i+1;j<consts.length;j++){
-            const dx=consts[i].x-consts[j].x, dy=consts[i].y-consts[j].y;
-            const d=Math.sqrt(dx*dx+dy*dy);
-            if(d<LINK_D){
-              // fade = fondu en début et fin de vie pour une apparition/disparition douce
-              const fa=Math.min(consts[i].age,consts[j].age,LIFE-consts[i].age,LIFE-consts[j].age);
-              const fade=Math.min(1,fa/60);
-              ctx.beginPath();
-              ctx.moveTo(consts[i].x,consts[i].y);
-              ctx.lineTo(consts[j].x,consts[j].y);
-              ctx.strokeStyle=`rgba(255,255,255,${.18*(1-d/LINK_D)*fade})`; // plus opaque si proches
-              ctx.lineWidth=.7; ctx.stroke();
-            }
-          }
+      // Courbe de Bézier rééchantillonnée à pas constant (+ normales) pour placer les poils
+      function sampleCurve(p, spacing) {
+        const N = 300, pts = [], cum = [0];
+        for (let i = 0; i <= N; i++) {
+          const t = i / N, u = 1 - t;
+          const x = u*u*u*p[0] + 3*u*u*t*p[2] + 3*u*t*t*p[4] + t*t*t*p[6];
+          const y = u*u*u*p[1] + 3*u*u*t*p[3] + 3*u*t*t*p[5] + t*t*t*p[7];
+          pts.push([x, y]);
+          if (i) cum.push(cum[i - 1] + Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]));
         }
-        // Dessiner les nœuds (halo + point central)
-        consts.forEach(c => {
-          c.phase += 0.03;
-          const fade = Math.min(1, c.age/60, (LIFE-c.age)/60);
-          const a = (0.55 + Math.sin(c.phase)*0.3) * fade; // scintillement sinusoïdal
-          const grd = ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,8); // halo dégradé
-          grd.addColorStop(0,`rgba(255,255,255,${a*0.4})`);
-          grd.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.beginPath(); ctx.arc(c.x,c.y,8,0,Math.PI*2);
-          ctx.fillStyle=grd; ctx.fill();
-          ctx.beginPath(); ctx.arc(c.x,c.y,1.8,0,Math.PI*2); // point central plus petit
-          ctx.fillStyle=`rgba(255,255,255,${a})`; ctx.fill();
-        });
+        const count = Math.max(8, Math.round(cum[N] / spacing));
+        const xs = [], ys = [], nx = [], ny = [];
+        let i = 0;
+        for (let j = 0; j <= count; j++) {
+          const target = cum[N] * j / count;
+          while (i < N - 1 && cum[i + 1] < target) i++;
+          const f = (target - cum[i]) / ((cum[i + 1] - cum[i]) || 1);
+          xs.push(pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f);
+          ys.push(pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f);
+        }
+        for (let j = 0; j <= count; j++) {
+          const a = Math.max(0, j - 1), b = Math.min(count, j + 1);
+          const tx = xs[b] - xs[a], ty = ys[b] - ys[a], l = Math.hypot(tx, ty) || 1;
+          nx.push(-ty / l); ny.push(tx / l);
+        }
+        return { xs, ys, nx, ny, count };
       }
 
-      // ── BOUCLE DE RENDU PRINCIPALE ────────────────────────────────────────
-      function draw(){
-        ctx.clearRect(0,0,W,H); // efface le canvas à chaque frame
+      // ── PLAN : une suite aléatoire de coups qui finit par couvrir tout l'écran ──────────────────
+      function plan() {
+        const cell = 16 * dpr;
+        const gw = Math.ceil(W / cell), gh = Math.ceil(H / cell), total = gw * gh;
+        const cov = new Uint8Array(total), mark = new Int32Array(total);
+        let left = total, markId = 0;
+        const minDim = Math.min(W, H), diag = Math.hypot(W, H);
+        const main = rand(-0.85, 0.85) + (Math.random() < 0.25 ? Math.PI / 2 : 0);   // sens dominant de la séance
+        const trail = [];                                                              // points déjà peints
+        const found = [];
 
-        layers.forEach(layer => {
-          layer.forEach(p => {
-            const dx=p.x-mx, dy=p.y-my, d=Math.sqrt(dx*dx+dy*dy);
-            if(d < 200 && d > 0){
-              // Effet "trou noir" : la souris attire les particules proches (<200px)
-              const f = (200-d)/200; // force proportionnelle à la proximité
-              p.vx -= (dx/d)*f*p.rep*4;
-              p.vy -= (dy/d)*f*p.rep*4;
-              // Si trop proche (< 8px), téléporte la particule ailleurs
-              if(d < 8){ p.x=Math.random()*W; p.y=Math.random()*H; p.vx=p.bvx; p.vy=p.bvy; }
-            }
-            // Lerp (interpolation linéaire) vers la vitesse de base → retour naturel
-            p.vx += (p.bvx - p.vx) * 0.02;
-            p.vy += (p.bvy - p.vy) * 0.02;
-            p.x += p.vx; p.y += p.vy;
-            // Wrapping : si sort d'un côté, réapparaît de l'autre
-            if(p.x<0)p.x=W; if(p.x>W)p.x=0;
-            if(p.y<0)p.y=H; if(p.y>H)p.y=0;
-            // Scintillement : opacité oscille via sin()
-            p.phase += p.freq;
-            p.a = Math.max(0, p.ba + Math.sin(p.phase) * p.amp);
-            ctx.beginPath();
-            ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-            ctx.fillStyle=`rgba(220,220,220,${p.a})`;
-            ctx.fill();
-          });
-          // Lignes de connexion entre particules du MÊME calque (cohérence visuelle)
-          for(let i=0;i<layer.length;i++){
-            for(let j=i+1;j<layer.length;j++){
-              const dx=layer[i].x-layer[j].x, dy=layer[i].y-layer[j].y;
-              const d=Math.sqrt(dx*dx+dy*dy);
-              if(d<layer[i].lnD){
-                ctx.beginPath();
-                ctx.moveTo(layer[i].x,layer[i].y);
-                ctx.lineTo(layer[j].x,layer[j].y);
-                ctx.strokeStyle=`rgba(200,200,200,${layer[i].lnA*(1-d/layer[i].lnD)})`; // s'estompe avec la distance
-                ctx.lineWidth=layer[i].r*.4;
-                ctx.stroke();
-              }
+        const bez = (p, t) => {
+          const u = 1 - t;
+          return [u*u*u*p[0] + 3*u*u*t*p[2] + 3*u*t*t*p[4] + t*t*t*p[6],
+                  u*u*u*p[1] + 3*u*u*t*p[3] + 3*u*t*t*p[5] + t*t*t*p[7]];
+        };
+
+        // cases touchées par un coup ; apply=false : on compte seulement les cases encore vides
+        function footprint(p, w, dry, apply) {
+          const chord = Math.hypot(p[6] - p[0], p[7] - p[1]);
+          const steps = Math.max(6, Math.ceil(chord * 1.15 / (cell * 0.8)));
+          const tMax = 1 - 0.28 * dry;                 // un pinceau sec s'arrête plus tôt
+          let gain = 0;
+          markId++;
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            if (t > tMax) break;
+            const q = bez(p, t);
+            const r = w * 0.3 / cell * (1 - 0.3 * dry) * (0.3 + 0.7 * Math.min(1, t * 6, (tMax - t) / 0.3));
+            const cx = q[0] / cell, cy = q[1] / cell;
+            const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(gw - 1, Math.ceil(cx + r));
+            const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(gh - 1, Math.ceil(cy + r));
+            for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+              const dx = xx + 0.5 - cx, dy = yy + 0.5 - cy;
+              if (dx * dx + dy * dy > r * r) continue;
+              const id = yy * gw + xx;
+              if (mark[id] === markId) continue;
+              mark[id] = markId;
+              if (!cov[id]) { gain++; if (apply) { cov[id] = 1; left--; } }
             }
           }
+          return gain;
+        }
+
+        // une case vide, choisie près d'un point de peinture existant (la peinture s'étend en tache)
+        function pickTarget() {
+          if (!found.length) return [W * rand(0.42, 0.58), H * rand(0.42, 0.58)];
+          const un = [];
+          for (let i = 0; i < total; i++) if (!cov[i]) un.push(i);
+          const a = trail[(Math.random() * trail.length) | 0];
+          let bx = 0, by = 0, bd = Infinity;
+          for (let i = 0; i < 16; i++) {
+            const id = un[(Math.random() * un.length) | 0];
+            const x = ((id % gw) + 0.5) * cell, y = (((id / gw) | 0) + 0.5) * cell;
+            const d = (x - a[0]) * (x - a[0]) + (y - a[1]) * (y - a[1]);
+            if (d < bd) { bd = d; bx = x; by = y; }
+          }
+          return [bx, by];
+        }
+
+        function candidate(t, wBase) {
+          const cross = Math.random() < 0.22;
+          const ang = main + (cross ? Math.PI / 2 + rand(-0.5, 0.5) : rand(-0.35, 0.35));
+          const w = wBase * rand(0.8, 1.25);
+          const L = Math.min(diag * 0.7, w * rand(2.5, 5.5));
+          const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx;
+          const at = rand(0.2, 0.8);
+          const ax = t[0] - dx * L * at, ay = t[1] - dy * L * at;
+          const bx = ax + dx * L, by = ay + dy * L;
+          const bend = L * rand(-0.07, 0.07), k1 = rand(0.6, 1.1), k2 = rand(0.2, 1.0);
+          return {
+            w, L,
+            dry: Math.random() < 0.25 ? rand(0.4, 0.8) : rand(0, 0.25),               // pinceau sec ou chargé
+            p: [ax, ay,
+                ax + (bx - ax) * 0.33 + nx * bend * k1, ay + (by - ay) * 0.33 + ny * bend * k1,
+                ax + (bx - ax) * 0.66 + nx * bend * k2, ay + (by - ay) * 0.66 + ny * bend * k2,
+                bx, by]
+          };
+        }
+
+        for (let guard = 0; left / total > 0.0015 && found.length < 170 && guard < 420; guard++) {
+          const cover = 1 - left / total;
+          const wBase = minDim * (0.19 - 0.13 * Math.pow(cover, 1.2));     // gros pinceau d'abord, puis plus fin
+          const target = pickTarget();
+          let best = null, bestScore = 0;
+          for (let c = 0; c < 10; c++) {
+            const cand = candidate(target, wBase);
+            const score = footprint(cand.p, cand.w, cand.dry, false) * rand(0.8, 1.2);
+            if (score > bestScore) { bestScore = score; best = cand; }
+          }
+          if (!best || footprint(best.p, best.w, best.dry, false) < 2) continue;
+          footprint(best.p, best.w, best.dry, true);
+          if (Math.random() < 0.5) {                                       // sens du geste au hasard
+            const p = best.p;
+            best.p = [p[6], p[7], p[4], p[5], p[2], p[3], p[0], p[1]];
+          }
+          for (let i = 0; i <= 8; i++) trail.push(bez(best.p, i / 8));
+          found.push(best);
+        }
+        return found;
+      }
+
+      // ── un coup de pinceau : brosse plate, poils plus ou moins chargés ────────────────────────
+      // Seule la silhouette se voit (l'image sert de peinture) : ce sont donc les bords effilochés,
+      // les stries sèches à l'intérieur et la fin en peigne qui font "pinceau".
+      function makeStroke(c, wMax) {
+        const s = sampleCurve(c.p, 8 * dpr);
+        s.w = c.w;
+        s.dry = c.dry;
+        s.ease = EASES[(Math.random() * EASES.length) | 0];
+        s.finished = false;
+        s.gapFactor = 0.025 + 0.12 * (c.w / wMax);
+        s.dur = c.L / (rand(1800, 3000) * dpr);
+        // pression : attaque franche (brosse posée à plat), fin un peu plus étroite
+        const rin = rand(0.05, 0.12), rout = rand(0.25, 0.45), tip = rand(0.6, 0.85), wf = rand(2, 5), wph = rand(0, 6.28);
+        s.prof = [];
+        for (let k = 0; k <= s.count; k++) {
+          const u = k / s.count;
+          s.prof.push((u < rin ? 0.7 + 0.3 * smooth(u / rin) : 1)
+            * (u > 1 - rout ? 1 - (1 - tip) * smooth((u - (1 - rout)) / rout) : 1)
+            * (1 + 0.05 * Math.sin(u * wf + wph)));
+        }
+        const B = clamp(Math.round(c.w / (3 * dpr)), 12, 48);
+        const gap = c.w / B;
+        const splay = rand(0, 0.12) * (0.5 + s.dry);          // les poils s'écartent un peu en fin de course
+        const tilt = rand(-0.06, 0.06);                         // brosse tenue un peu de biais : départ en biseau
+        s.bristles = [];
+        for (let i = 0; i < B; i++) {
+          const f = (i + 0.5) / B * 2 - 1, edge = Math.abs(f);
+          const thin = Math.random() < 0.07 || (edge > 0.85 && Math.random() < 0.5);
+          const lw = gap * (thin ? rand(0.4, 0.7) : rand(1.5, 2.4));
+          // charge en peinture : plus le poil est sec, plus il casse tôt et longtemps
+          const load = clamp(rand(0.55, 1.15) - s.dry * 0.45 - edge * 0.15, 0.15, 1);
+          s.bristles.push({
+            off: f * c.w / 2 + rand(-0.35, 0.35) * gap,
+            f,
+            bucket: clamp(Math.round((lw / dpr - 1) / 2), 0, NB - 1),
+            start: Math.round(s.count * clamp(rand(0, 0.04) + edge * edge * rand(0.01, 0.07) + tilt * (f + 1), 0, 0.2)),
+            stop: Math.round(s.count * (1 - rand(0, 0.06) - (1 - load) * rand(0.05, 0.4) - edge * edge * rand(0, 0.08))),
+            dryAt: 0.35 + load * rand(0.35, 0.75),
+            maxGap: rand(0.2, 0.65) * (0.5 + s.dry),
+            nf: rand(4, 9),                                     // longueur des cassures (en pas)
+            speed: rand(0.995, 1.005),
+            seed: (Math.random() * 1e9) | 0,
+            drawn: -1
+          });
+        }
+        s.splay = splay;
+        return s;
+      }
+
+      // bruit lissé le long d'un poil : des cassures longues, dans le sens du geste
+      function vnoise(seed, x) {
+        const i = Math.floor(x), t = x - i, a = hash(seed, i), b = hash(seed, i + 1);
+        return a + (b - a) * t * t * (3 - 2 * t);
+      }
+
+      function makeStrokes() {
+        const list = plan();
+        let wMax = 1;
+        for (const c of list) wMax = Math.max(wMax, c.w);
+        const out = list.map(c => makeStroke(c, wMax));
+        // départs échelonnés au hasard : les gros coups se suivent plus lentement que les retouches
+        let t = 0;
+        out.forEach((s, i) => {
+          s.t0 = t;
+          t += rand(0.4, 1.2) * s.gapFactor * (i < 3 ? 0.5 : 1);
         });
-        drawSparks(); // dessine les nœuds constellation par-dessus
-        requestAnimationFrame(draw); // boucle à ~60fps
-      }
-      draw();
-    })();
-
-
-    // ── NAV STUCK ──────────────────────────────────────────────────────────
-    // Écoute le scroll : dès que l'utilisateur descend de plus de 60px,
-    // la classe .stuck est ajoutée à la nav → fond flouté + bordure visible (voir CSS).
-    // {passive:true} = on ne bloque jamais le scroll, meilleures perfs.
-    const navEl = document.getElementById('nav');
-    window.addEventListener('scroll', () => navEl.classList.toggle('stuck', scrollY > 60), {passive:true});
-
-    // ── LOADER ─────────────────────────────────────────────────────────────
-    // Attend que toutes les ressources soient chargées (event 'load'),
-    // puis attend encore 1,8s pour que l'animation d'intro ait le temps de jouer,
-    // avant de faire disparaître l'écran de chargement via la classe .out.
-    window.addEventListener('load', () => {
-      setTimeout(() => document.getElementById('loader').classList.add('out'), 1800);
-    });
-
-    // ── CURSEUR CUSTOM ─────────────────────────────────────────────────────
-    const cur  = document.getElementById('cur');
-    const curF = document.getElementById('cur-f');
-    // cmx/cmy = position exacte de la souris (mise à jour immédiatement)
-    // cfx/cfy = position du grand cercle (mise à jour par lerp, avec retard)
-    let cmx=0, cmy=0, cfx=0, cfy=0;
-
-    // Le petit point (#cur) suit la souris sans délai
-    document.addEventListener('mousemove', e => {
-      cmx = e.clientX; cmy = e.clientY;
-      cur.style.left = cmx+'px'; cur.style.top = cmy+'px';
-    });
-
-    // Le grand cercle (#cur-f) s'approche à 10% de la distance restante par frame
-    // → effet de "traîne" fluide sans spring library
-    (function tickCur(){
-      cfx += (cmx-cfx)*.1; cfy += (cmy-cfy)*.1;
-      curF.style.left = cfx+'px'; curF.style.top = cfy+'px';
-      requestAnimationFrame(tickCur);
-    })();
-
-    // Survol des éléments interactifs → le petit point grossit (classe .big = 48px)
-    // pour indiquer visuellement que l'élément est cliquable
-    document.querySelectorAll('a,button,.cat-card').forEach(el => {
-      el.addEventListener('mouseenter', () => cur.classList.add('big'));
-      el.addEventListener('mouseleave', () => cur.classList.remove('big'));
-    });
-
-    // ── TILT CATEGORIES ────────────────────────────────────────────────────
-    // Effet 3D sur les cartes de catégorie : la carte s'incline vers le curseur
-    // grâce à rotateX / rotateY (perspective:900px).
-    // tx/ty = position normalisée du curseur dans la carte (0 = gauche/haut, 1 = droite/bas)
-    // → centrés sur 0.5 pour avoir une valeur entre -0.5 et +0.5
-    document.querySelectorAll('.cat-card').forEach(card => {
-      card.style.transition = 'transform .15s ease';
-      card.addEventListener('mousemove', e => {
-        const r  = card.getBoundingClientRect();
-        const tx = (e.clientX - r.left) / r.width  - 0.5; // axe horizontal (-0.5 → +0.5)
-        const ty = (e.clientY - r.top)  / r.height - 0.5; // axe vertical   (-0.5 → +0.5)
-        card.style.transform = `perspective(900px) rotateY(${tx * 6}deg) rotateX(${ty * -4}deg) scale(1.01)`;
-      });
-      // Au départ de la souris, on remet la carte à plat
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)';
-      });
-    });
-
-    // ── DEMO REEL PLAYER ───────────────────────────────────────────────────
-    // L'iframe YouTube n'a pas de src au départ (économise une requête réseau inutile).
-    // Au clic sur le bloc reel, on lui assigne l'URL avec autoplay=1&mute=1,
-    // et on ajoute .playing pour cacher la vignette et afficher la vidéo.
-    function playReel(el) {
-      const iframe = el.querySelector('.reel-iframe');
-      iframe.src = 'https://www.youtube.com/embed/l95Ay0jsxXQ?autoplay=1&mute=1';
-      el.classList.add('playing');
-    }
-
-    // ── SCROLL REVEAL ──────────────────────────────────────────────────────
-    // IntersectionObserver surveille tous les éléments .reveal.
-    // Dès qu'un élément atteint 6% de visibilité (threshold:.06) avec une marge
-    // de -40px en bas (rootMargin), la classe .in est ajoutée → animation CSS de révélation.
-    const obs = new IntersectionObserver(
-      e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }),
-      {threshold:.06, rootMargin:'0px 0px -40px 0px'}
-    );
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-
-    // ── SCROLL ANIMATIONS (PARALLAXE) ──────────────────────────────────────
-    // Références aux éléments qui bougent au scroll
-    const heroInner  = document.querySelector('.hero-inner');
-    const heroGhost  = document.querySelector('.h-ghost');
-    const heroName   = document.querySelector('.h-name');
-    const heroDesc   = document.querySelector('.h-desc');
-    const abPhoto    = document.querySelector('.ab-photo-wrap');
-    const abSection  = document.getElementById('about');
-
-    // ticking = verrou anti-doublon : on ne planifie qu'une seule frame à la fois
-    let ticking = false;
-    let scrollY2 = 0;
-
-    // onScroll : capte la position de scroll et déclenche une frame RAF si besoin
-    function onScroll(){
-      scrollY2 = window.scrollY;
-      if(!ticking){ requestAnimationFrame(applyScroll); ticking = true; }
-    }
-
-    // applyScroll : applique les transformations parallaxe une seule fois par frame
-    function applyScroll(){
-      const sy = scrollY2;
-      const vh = window.innerHeight;
-
-      // Hero parallax — chaque couche bouge à une vitesse différente pour l'effet de profondeur
-      // heroInner (28%) > heroDesc (18%) > heroGhost (12%) → avant-plan bouge plus vite
-      if(heroInner)  heroInner.style.transform  = `translateY(${sy * .28}px)`;
-      if(heroGhost)  heroGhost.style.transform   = `translateY(${sy * .12}px)`;
-      if(heroDesc)   heroDesc.style.transform    = `translateY(${sy * .18}px)`;
-
-      // Photo About parallax — la photo monte légèrement quand la section est centrée à l'écran
-      // mid = distance du centre de la section par rapport au centre du viewport
-      if(abPhoto && abSection){
-        const r   = abSection.getBoundingClientRect();
-        const mid = r.top + r.height / 2 - vh / 2;
-        abPhoto.style.transform = `translateY(${mid * -.12}px)`;
+        const shrink = Math.min(1, 0.95 / Math.max(t, 0.01));
+        endTime = 0;
+        for (const s of out) { s.t0 *= shrink; endTime = Math.max(endTime, s.t0 + s.dur); }
+        return out;
       }
 
-      ticking = false; // libère le verrou pour le prochain scroll
+      // ajoute la partie nouvelle d'un poil aux chemins de la frame (par classe d'épaisseur)
+      function addBristle(s, b, upto, pat) {
+        const from = Math.max(b.drawn, b.start);
+        const pp = pat[b.bucket] || (pat[b.bucket] = new Path2D());
+        let down = false;
+        for (let k = from; k <= upto; k++) {
+          const u = k / s.count;
+          const dryness = u > b.dryAt ? Math.min(1, (u - b.dryAt) / 0.3) * b.maxGap : 0;
+          if (dryness && vnoise(b.seed, k / b.nf) < dryness) { down = false; continue; }
+          const o = b.off * s.prof[k] + b.f * s.splay * s.w * u * u;
+          const x = s.xs[k] + s.nx[k] * o, y = s.ys[k] + s.ny[k] * o;
+          if (down) pp.lineTo(x, y); else { pp.moveTo(x, y); down = true; }
+        }
+        b.drawn = upto;
+      }
+
+      function stepStrokes() {
+        const pat = new Array(NB);
+        for (const s of strokes) {
+          if (s.finished || clock < s.t0) continue;
+          const x = Math.min(1, (clock - s.t0) / s.dur);
+          const e = s.ease(x);
+          for (const b of s.bristles) {
+            const upto = Math.min(b.stop, Math.floor(e * b.speed * s.count));
+            if (upto > b.drawn) addBristle(s, b, upto, pat);
+          }
+          if (x >= 1) s.finished = true;
+        }
+        // l'illustration révélée par les poils (un seul stroke() par classe d'épaisseur)
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = pattern;
+        ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+        for (let i = 0; i < NB; i++) if (pat[i]) { ctx.lineWidth = BW[i]; ctx.stroke(pat[i]); }
+      }
+
+      function frame(now) {
+        raf = 0;
+        const dt = Math.min(now - last, 50);
+        last = now;
+        if (phase === 'paint') {
+          clock += dt / 1000;
+          stepStrokes();
+          if (clock >= endTime) {
+            phase = 'settle'; settleFrames = 0;
+          }
+        } else if (phase === 'settle') {
+          // les derniers trous entre les coups de pinceau se comblent en douceur
+          const final = ++settleFrames >= 14;
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.globalAlpha = final ? 1 : 0.18;
+          ctx.drawImage(cover, 0, 0);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+          if (final) phase = 'done';
+        }
+        if (phase === 'paint' || phase === 'settle') kick();
+      }
+
+      function kick() {
+        if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+      }
+
+      function reset() {
+        cancelAnimationFrame(raf); raf = 0;
+        ctx.clearRect(0, 0, W, H);
+        phase = 'idle'; clock = 0;
+        strokes = reduced ? [] : makeStrokes();
+      }
+
+      function start() {
+        wanted = true;
+        clearTimeout(resetTimer);
+        if (!ready) return;                       // démarrera dès que l'image est chargée
+        if (phase === 'idle') {
+          if (reduced) { ctx.drawImage(cover, 0, 0); phase = 'done'; return; }
+          phase = 'paint';
+        }
+        kick();
+      }
+
+      function stop() {
+        wanted = false;
+        // on laisse le fondu CSS se terminer, puis on repart sur une toile vierge
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(reset, 900);
+      }
+
+      function onResize() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!ready) return;
+          layout();
+          if (wanted) start();
+        }, 200);
+      }
+
+      function init() {
+        ready = true;
+        layout();
+        window.addEventListener('resize', onResize);
+        if (wanted) start();
+      }
+
+      img.src = src;
+      (img.decode ? img.decode() : new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; })).then(init).catch(() => {});
+
+      return {
+        start, stop,
+        destroy() {
+          cancelAnimationFrame(raf);
+          clearTimeout(resetTimer); clearTimeout(resizeTimer);
+          window.removeEventListener('resize', onResize);
+        }
+      };
     }
 
-    window.addEventListener('scroll', onScroll, {passive:true});
+    // Home : au survol d'une catégorie du menu, ses images défilent en fond ; sinon, la dernière œuvre
+    (function () {
+      const D2 = 'images/Digital2d/2026/', D3E = 'images/Digital3d/2025/Eclipse/', D3G = 'images/Digital3d/2025/GuangJian Inspired sculpt/', TR = 'images/Traditional/';
+      const CATS = {
+        d2: [D2 + 'Odyssey.jpg', D2 + 'Red.jpg', D2 + 'Espina.jpg', D2 + 'PS01.jpg', D2 + 'Prairie.jpg', D2 + 'VonDutch.jpg'],
+        d3: [D3E + '06.jpg', D3G + '01.png', D3E + '01.jpg', D3G + '03.png', D3E + '03.jpg', D3G + '05.png'],
+        tr: [TR + '20260310_220524.jpg', TR + 'CCI15052026_0004.jpg', TR + 'CCI15052026_0002.jpg', TR + 'CCI15052026_0001.jpg', TR + 'CCI15052026_0003.jpg', TR + 'CCI15052026_0007.jpg']
+      };
+      const BASE = 'images/Digital2d/2026/Lia.jpg';
+      const layers = document.querySelectorAll('#stage > img');
+      const contact = document.querySelector('.stage-contact');
+      const sign = document.querySelector('.s-sign');
+      let front = 0, timer = 0, leaveTimer = 0, current = BASE;
+      const preloaded = {};
 
-    // ── BURGER MENU (MOBILE) ───────────────────────────────────────────────
-    // Le bouton burger bascule les classes .open sur lui-même et sur le menu mobile.
-    // overflow:hidden sur le body empêche le scroll de la page quand le menu est ouvert.
-    const burger = document.querySelector('.n-burger');
-    const mobileMenu = document.querySelector('.n-mobile-menu');
-    burger.addEventListener('click', () => {
-      burger.classList.toggle('open');
-      mobileMenu.classList.toggle('open');
-      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
-    });
-    // Un clic sur n'importe quel lien du menu mobile referme le menu
-    document.querySelectorAll('.n-mob-link, .n-mobile-sub a').forEach(a => {
-      a.addEventListener('click', () => {
-        burger.classList.remove('open');
-        mobileMenu.classList.remove('open');
-        document.body.style.overflow = '';
+      function show(src, fit) {
+        if (src === current) return;
+        current = src;
+        const back = layers[1 - front];
+        sign.style.setProperty('--sign-img', 'url("' + src + '")');   // la signature suit l'illustration
+        back.classList.toggle('fit', !!fit);   // dessins en portrait : affichés en entier
+        const swap = () => { back.classList.add('on'); layers[front].classList.remove('on'); front = 1 - front; };
+        back.onload = null;
+        if (back.getAttribute('src') === src && back.complete) swap();
+        else { back.onload = swap; back.src = src; }
+      }
+      function enter(cat) {
+        clearTimeout(leaveTimer); clearInterval(timer);
+        contact.classList.toggle('on', cat === 'ct');   // Contact : l'email en grand
+        if (cat === 'ct') return;
+        const list = CATS[cat];
+        if (!preloaded[cat]) { list.forEach(u => { new Image().src = u; }); preloaded[cat] = true; }
+        let i = 0;
+        const fit = cat === 'tr';
+        show(list[0], fit);
+        timer = setInterval(() => { i = (i + 1) % list.length; show(list[i], fit); }, 1800);
+      }
+      function leave() {
+        clearInterval(timer);
+        leaveTimer = setTimeout(() => { contact.classList.remove('on'); show(BASE); }, 150);
+      }
+      document.querySelectorAll('#side [data-cat]').forEach(a => {
+        a.addEventListener('mouseenter', () => enter(a.dataset.cat));
+        a.addEventListener('mouseleave', leave);
+        a.addEventListener('focus', () => enter(a.dataset.cat));
+        a.addEventListener('blur', leave);
       });
-    });
-
-
+    })();
   </script>
 
-</body></html>
+</body>
+</html>
