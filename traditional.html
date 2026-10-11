@@ -16,6 +16,7 @@
   <link rel="preload" href="fonts/Tritopani.otf" as="font" type="font/otf" crossorigin>
   <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}if('onpagereveal' in window&&/^https?:/.test(location.protocol))document.documentElement.classList.add('vt')</script>
   <script src="theme.js" defer></script>
+  <script src="menu.js" defer></script>
   <script src="smooth.js" defer></script>
 </head>
 <body class="has-side gallery pg-trad" style="padding-bottom: 60px;">
@@ -40,7 +41,7 @@
   <!-- ── NAVIGATION ───────────────────────────────────────────────────────── -->
   <!-- Menu : même colonne que la home -->
   <aside id="side">
-    <a href="index.html" class="s-sign">Victor<br>Dalbin</a>
+    <a href="index.html" class="s-sign">Victor<br> Dalbin</a>
     <div class="s-bottom">
       <ul class="s-menu">
         <li class="s-main"><a href="index.html">Homepage</a></li>
@@ -54,6 +55,7 @@
     </div>
     <button class="theme-toggle" type="button">Night mode</button>
   </aside>
+  <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="side"><span></span></button>
 
   <!-- ── MENU MOBILE (plein écran) ────────────────────────────────────────── -->
   

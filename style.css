@@ -346,3 +346,38 @@ html.vt body>*{animation:none!important}
   .intro-sign{font-size:clamp(4.6rem,21vw,7rem)}
   .intro-btn{font-size:.82rem}
 }
+
+/* ── TÉLÉPHONE : barre fine (signature + burger), menu en plein écran ───── */
+.menu-toggle{display:none}
+@media(max-width:768px){
+  .has-side #side{position:sticky;top:0;z-index:100;flex-direction:row;justify-content:space-between;align-items:center;gap:0;height:64px;padding:0 var(--pad);background:var(--bg);border-right:0;border-bottom:1px solid var(--rule)}
+  .has-side .s-sign{font-size:1.9rem;line-height:1;margin:0;padding-top:4px}
+  .has-side .s-sign br{display:none}
+
+  /* burger en haut à droite, dans la barre ; ses traits inversent les couleurs du fond (toujours visibles) */
+  .menu-toggle{display:block;position:fixed;right:calc(var(--pad) - 13px);top:6px;z-index:150;width:52px;height:52px;margin:0;background:none;border:0;cursor:pointer;color:#fff;mix-blend-mode:difference}
+  .menu-toggle span,.menu-toggle span::before,.menu-toggle span::after{position:absolute;left:13px;width:26px;height:1.5px;background:currentColor;border-radius:1px;transition:transform .45s var(--ease),background-color .3s}
+  .menu-toggle span{top:25px}
+  .menu-toggle span::before,.menu-toggle span::after{content:"";left:0}
+  .menu-toggle span::before{transform:translateY(-8px)}
+  .menu-toggle span::after{transform:translateY(8px)}
+  /* menu ouvert : les traits deviennent une croix */
+  html.menu-open .menu-toggle span{background-color:transparent}
+  html.menu-open .menu-toggle span::before{transform:rotate(45deg)}
+  html.menu-open .menu-toggle span::after{transform:rotate(-45deg)}
+  html:has(#intro) .menu-toggle{visibility:hidden}   /* caché pendant l'intro */
+
+  /* menu fermé : catégories et mode nuit cachés */
+  .has-side #side .s-bottom,.has-side #side .theme-toggle{display:none}
+
+  /* menu ouvert : écran plein, catégories en grand au centre, mode nuit en bas */
+  .has-side #side.open .s-bottom{display:flex;position:fixed;inset:0;z-index:-1;margin:0;transform:none;align-items:center;justify-content:center;background:var(--bg);animation:menu-in .35s var(--ease) both}
+  .has-side #side.open .s-menu{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:center;justify-content:center;gap:34px;font-size:1.15rem;letter-spacing:.2em;line-height:1.5}
+  .has-side #side.open .s-group{display:flex;flex-direction:column;align-items:center;gap:20px}
+  .has-side #side.open .theme-toggle{display:block;position:fixed;left:0;right:0;bottom:max(32px,env(safe-area-inset-bottom));margin:0;text-align:center;font-size:.72rem;animation:menu-in .35s var(--ease) both}
+  html.menu-open{overflow:hidden}
+}
+@keyframes menu-in{from{opacity:0}to{opacity:1}}
+
+/* téléphone, accueil : Lia cadrée sur le visage, le bras et le papillon */
+@media(max-width:768px){#stage>img[src$="Lia.jpg"]{object-position:12% 50%}}
