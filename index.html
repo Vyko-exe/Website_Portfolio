@@ -60,6 +60,7 @@
   </section>
 
 
+  <script src="media.js"></script>
   <script>
     // Intro : fond blanc, l'illustration est "peinte" au pinceau quand on survole le bouton,
     // clic = entrer (une seule fois par session)
@@ -485,19 +486,21 @@
         if (src === current) return;
         current = src;
         const back = layers[1 - front];
-        sign.style.setProperty('--sign-img', 'url("' + src + '")');   // la signature suit l'illustration
+        const url = Media.web(src, 'full');
+        sign.style.setProperty('--sign-img', 'url("' + url + '")');   // la signature suit l'illustration
         back.classList.toggle('fit', !!fit);   // dessins en portrait : affichés en entier
         const swap = () => { back.classList.add('on'); layers[front].classList.remove('on'); front = 1 - front; };
         back.onload = null;
-        if (back.getAttribute('src') === src && back.complete) swap();
-        else { back.onload = swap; back.src = src; }
+        back.onerror = () => { back.onerror = null; back.src = src; };   // version optimisée absente : original
+        if (back.getAttribute('src') === url && back.complete) swap();
+        else { back.onload = swap; back.src = url; }
       }
       function enter(cat) {
         clearTimeout(leaveTimer); clearInterval(timer);
         contact.classList.toggle('on', cat === 'ct');   // Contact : l'email en grand
         if (cat === 'ct') return;
         const list = CATS[cat];
-        if (!preloaded[cat]) { list.forEach(u => { new Image().src = u; }); preloaded[cat] = true; }
+        if (!preloaded[cat]) { list.forEach(u => { new Image().src = Media.web(u, 'full'); }); preloaded[cat] = true; }
         let i = 0;
         const fit = cat === 'tr';
         show(list[0], fit);

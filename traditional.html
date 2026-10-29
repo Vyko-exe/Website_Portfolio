@@ -196,6 +196,7 @@
     </div>
   </div>
 
+  <script src="media.js"></script>
   <script>
     // ── MODE RÉORGANISATION ───────────────────────────────────────────────────
     // Activé par 5 clics rapides sur le titre — permet de drag & drop les images
@@ -267,8 +268,8 @@
         const img = t.querySelector('.thumb-img');
         if (img) {
           // conserve le chemin image dans data-bg (lazy loading)
-          const src = img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'').replace(/['"]/g,'');
-          if (src) { img.dataset.bg = src; img.removeAttribute('style'); }
+          const src = Media.src(img);
+          if (src) { img.dataset.bg = src; img.removeAttribute('style'); img.removeAttribute('data-src'); }
         }
       });
       clone.querySelector('#reorder-bar').style.display = 'none';
@@ -309,14 +310,7 @@
     const lazyObs = new IntersectionObserver(e => e.forEach(x => {
       if (x.isIntersecting) {
         const el = x.target;
-        if (el.dataset.bg) {
-          const src = el.dataset.bg;
-          const tester = new Image();
-          tester.onload  = () => { el.style.backgroundImage = "url('"+src+"')"; };
-          tester.onerror = () => { el.closest('.thumb')?.remove(); };
-          tester.src = src;
-          delete el.dataset.bg;
-        }
+        Media.bg(el, () => el.closest('.thumb')?.remove());
         lazyObs.unobserve(el);
       }
     }), {rootMargin:'200px'});
@@ -342,9 +336,7 @@
       current = i;
       const t = thumbs[i];
       const imgEl = t.querySelector('.thumb-img');
-      const src = imgEl
-        ? (imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') || imgEl.dataset.bg || '')
-        : '';
+      const src = Media.src(imgEl);
       lbTitle.textContent = t.dataset.title || '';
       lbInfo.textContent  = '';
       lbCont.innerHTML = '';
@@ -352,7 +344,7 @@
         // image réelle
         const img = document.createElement('img');
         img.id = 'lb-img';
-        img.src = src;
+        Media.img(img, src);
         img.onload = () => img.classList.add('loaded');
         lbCont.appendChild(img);
       } else {
@@ -386,6 +378,7 @@
     lb.addEventListener('click', e => { if (e.target === lb) close(); });
     document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); const n=all().length; open((current-1+n)%n); });
     document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); open((current+1)%all().length); });
+    Media.swipe(lb, () => open((current-1+all().length)%all().length), () => open((current+1)%all().length));
     document.addEventListener('keydown', e => {
       if (!lb.classList.contains('open')) return;
       if (e.key==='Escape') close();

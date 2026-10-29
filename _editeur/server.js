@@ -7,13 +7,16 @@ const fs = require('fs');
 const path = require('path');
 const { execFile, spawn } = require('child_process');
 
-const PORT = 4321;
+const PORT = +process.env.PORT || 4321;
 const ROOT = path.resolve(__dirname, '..');           // dossier du site
 const UI = path.join(__dirname, 'public');
 const BACKUPS = path.join(__dirname, 'backups');
+// date du code au démarrage : si server.js change ensuite, l'interface demande de relancer
+const STARTED_FROM = fs.statSync(__filename).mtimeMs;
 
 const PAGES = {
   d2: { file: 'digital-2d.html', kind: 'years', label: 'Digital 2D', dir: 'images/Digital2d' },
+  ve: { file: 'visual-exploration.html', kind: 'flat', label: 'Visual Exploration', dir: 'images/VisualExploration' },
   d3: { file: 'digital-3d.html', kind: 'projects', label: 'Digital 3D', dir: 'images/Digital3d' },
   tr: { file: 'traditional.html', kind: 'flat', label: 'Traditional', dir: 'images/Traditional' },
 };
@@ -53,11 +56,13 @@ function parseThumbs(chunk) {
     const bg = block.match(/data-bg="([^"]*)"/);
     const label = block.match(/class="thumb-label">([\s\S]*?)<\//);
     const images = attr(open, 'data-images');
+    const imgTag = block.match(/<div class="thumb-img"[^>]*>/);
     items.push({
       title: attr(open, 'data-title') ?? (label ? decode(label[1]) : ''),
       year: attr(open, 'data-year'),
       src: bg ? decode(bg[1]) : '',
       images: images ? images.split(',').map(s => s.trim()).filter(Boolean) : null,
+      crop: parseCrop(imgTag ? attr(imgTag[0], 'style') : null),
     });
     re.lastIndex = end;
   }
@@ -86,19 +91,37 @@ function readGallery(key) {
   return { key, kind: page.kind, groups };
 }
 
+// Cadrage de la vignette : style="--pos:30% 20%;--zoom:1.4" sur .thumb-img (voir style.css)
+function parseCrop(style) {
+  if (!style) return null;
+  const pos = style.match(/--pos:\s*([\d.]+)%\s+([\d.]+)%/);
+  const zoom = style.match(/--zoom:\s*([\d.]+)/);
+  if (!pos && !zoom) return null;
+  return { x: pos ? +pos[1] : 50, y: pos ? +pos[2] : 0, z: zoom ? +zoom[1] : 1 };
+}
+
+function cropAttr(crop) {
+  if (!crop) return '';
+  const r = n => Math.round(n * 10) / 10;
+  const x = r(crop.x), y = r(crop.y), z = Math.round(crop.z * 100) / 100;
+  if (x === 50 && y === 0 && z === 1) return '';
+  return ` style="--pos:${x}% ${y}%${z !== 1 ? `;--zoom:${z}` : ''}"`;
+}
+
 // ── Génération du HTML des galeries (même balisage que les pages actuelles) ──
 function thumbHtml(kind, it, indent) {
   const title = escAttr(it.title), label = escText(it.title);
+  const img = `<div class="thumb-img" data-bg="${escAttr(it.src)}"${cropAttr(it.crop)}></div>`;
   if (kind === 'flat')
-    return `${indent}<div class="thumb" data-title="${title}"><div class="thumb-img" data-bg="${escAttr(it.src)}"></div><div class="thumb-ov"></div><div class="thumb-label">${label}</div></div>`;
+    return `${indent}<div class="thumb" data-title="${title}">${img}<div class="thumb-ov"></div><div class="thumb-label">${label}</div></div>`;
   if (kind === 'projects') {
     const imgs = (it.images && it.images.length ? it.images : [it.src]).map(escAttr).join(',');
     return `${indent}<div class="thumb" data-title="${title}" data-year="${escAttr(it.year)}" data-images="${imgs}">\n` +
-      `${indent}  <div class="thumb-img" data-bg="${escAttr(it.src)}"></div>\n` +
+      `${indent}  ${img}\n` +
       `${indent}  <div class="thumb-ov"></div><span class="thumb-label">${label}</span>\n` +
       `${indent}</div>`;
   }
-  return `${indent}<div class="thumb" data-title="${title}" data-year="${escAttr(it.year)}"><div class="thumb-img" data-bg="${escAttr(it.src)}"></div><div class="thumb-ov"></div><span class="thumb-label">${label}</span></div>`;
+  return `${indent}<div class="thumb" data-title="${title}" data-year="${escAttr(it.year)}">${img}<div class="thumb-ov"></div><span class="thumb-label">${label}</span></div>`;
 }
 
 function writeGallery(key, data) {
@@ -167,7 +190,7 @@ function writeHome(d) {
   html = html.replace(/(const BASE = ')[^']*(')/, (_, a, b) => a + js(d.hero) + b);
   if (d.photo) html = html.replace(/(<img src=")[^"]*(" alt="[^"]*" class="sc-photo">)/, (_, a, b) => a + escAttr(d.photo) + b);
   html = html.replace(CATS_RE, (_, ind) => {
-    const body = ['d2', 'd3', 'tr'].map(k => `${ind}  ${k}: [${(d.cats[k] || []).map(u => `'${js(u)}'`).join(', ')}]`).join(',\n');
+    const body = ['d2', 've', 'd3', 'tr'].map(k => `${ind}  ${k}: [${(d.cats[k] || []).map(u => `'${js(u)}'`).join(', ')}]`).join(',\n');
     return `${ind}const CATS = {\n${body}\n${ind}};`;
   });
   save('index.html', html);
@@ -217,7 +240,7 @@ function listImages() {
   const walk = dir => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
-      if (e.isDirectory()) walk(p);
+      if (e.isDirectory()) { if (e.name !== '_web') walk(p); }   // _web : versions WebP générées
       else if (IMG_EXT.test(e.name) && !/\.hei[cf]$/i.test(e.name)) out.push(path.relative(ROOT, p).split(path.sep).join('/'));
     }
   };
@@ -242,8 +265,8 @@ function git(args) {
       resolve({ ok: !err, out: (stdout + stderr).trim() }));
   });
 }
-// uniquement les pages à la racine et le dossier images (jamais l'éditeur lui-même)
-const SITE_PATHS = ['--', ':(glob)*.html', 'images'];
+// les fichiers du site à la racine + images et polices (jamais l'éditeur lui-même)
+const SITE_PATHS = ['--', ':(glob)*.html', ':(glob)*.css', ':(glob)*.js', 'images', 'fonts', 'Favicon.png', 'CNAME'];
 
 async function gitStatus() {
   const r = await git(['status', '--porcelain', '-uall', ...SITE_PATHS]);
@@ -258,7 +281,7 @@ async function publish(message) {
   r = await git(['commit', '-m', message || 'Mise à jour du portfolio (éditeur)']);
   if (!r.ok) return r;
   const push = await git(['push']);
-  return { ok: push.ok, out: push.ok ? `Publié ✓ (${changes.length} fichier(s)). Le site se met à jour d'ici une minute.` : push.out };
+  return { ok: push.ok, out: push.ok ? `Publié ✓ (${changes.length} fichier(s)). Le site en ligne se met à jour en 1 à 10 minutes (cache de GitHub) : attends un peu puis recharge avec Ctrl+F5.` : push.out };
 }
 
 // ── Serveur HTTP ────────────────────────────────────────────────────────────
@@ -283,7 +306,8 @@ async function api(req, res, url) {
     for (const k of Object.keys(PAGES)) galleries[k] = readGallery(k);
     const cname = path.join(ROOT, 'CNAME');
     const domain = fs.existsSync(cname) ? fs.readFileSync(cname, 'utf8').trim() : '';
-    return json(res, 200, { galleries, home: readHome(), domain, changes: (await gitStatus()).length });
+    const stale = fs.statSync(__filename).mtimeMs !== STARTED_FROM;
+    return json(res, 200, { galleries, home: readHome(), domain, stale, changes: (await gitStatus()).length });
   }
   if (req.method === 'GET' && route === 'images') return json(res, 200, listImages());
   if (req.method === 'GET' && route === 'status') return json(res, 200, { changes: await gitStatus() });

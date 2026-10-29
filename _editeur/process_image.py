@@ -4,6 +4,7 @@
 - applique la rotation EXIF (photos de téléphone)
 - réduit les images dont le grand côté dépasse MAX_SIDE
 - convertit les gros PNG sans transparence en JPG
+- génère ses versions WebP légères (optimize_images.py)
 
 Affiche le chemin du fichier final sur la dernière ligne.
 """
@@ -32,8 +33,7 @@ def main(src):
         import pillow_heif
         pillow_heif.register_heif_opener()
     if ext == ".gif":
-        print(src)
-        return
+        return src
 
     img = Image.open(src)
     rotated = img.getexif().get(0x0112, 1) != 1
@@ -52,16 +52,22 @@ def main(src):
         dest = unique(os.path.splitext(src)[0] + ".jpg")
         img.convert("RGB").save(dest, "JPEG", quality=JPG_QUALITY, optimize=True, progressive=True)
         os.remove(src)
-        print(dest)
+        return dest
     elif resized or rotated:
         if ext in (".jpg", ".jpeg"):
             img.convert("RGB").save(src, "JPEG", quality=JPG_QUALITY, optimize=True, progressive=True)
         else:
             img.save(src, optimize=True)
-        print(src)
+        return src
     else:
-        print(src)
+        return src
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    final = main(sys.argv[1])
+    try:  # versions WebP légères pour le site (voir optimize_images.py)
+        from optimize_images import optimize
+        optimize(final)
+    except Exception:
+        pass
+    print(final)

@@ -89,7 +89,13 @@
   #drawer.open { transform: none; box-shadow: -30px 0 60px rgba(0,0,0,.5); }
   #drawer .d-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); }
   #drawer .d-body { padding: 20px; overflow-y: auto; flex: 1; }
-  #drawer .d-prev { width: 100%; max-height: 46vh; object-fit: contain; background: #000; display: block; margin-bottom: 18px; }
+  .grid[data-gi] .tile { aspect-ratio: 3/4; }   /* même format que les vignettes du site */
+  .crop-frame { width: min(260px, 70%); aspect-ratio: 3/4; margin: 0 auto 12px; overflow: hidden; position: relative; background: #000;
+    cursor: grab; touch-action: none; outline: 1px solid var(--line-2); }
+  .crop-frame.dragging { cursor: grabbing; outline-color: var(--accent); }
+  .crop-frame img { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; pointer-events: none; }
+  .crop-tools { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .crop-tools input[type=range] { flex: 1; accent-color: var(--accent); }
   #drawer .d-foot { padding: 16px 20px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: space-between; }
   .icon-btn { background: none; border: 0; font-size: 22px; color: var(--muted); line-height: 1; padding: 0 4px; }
   .icon-btn:hover { color: var(--text); }
@@ -117,6 +123,7 @@
   .toast { background: #222; border: 1px solid var(--line-2); padding: 10px 18px; font-size: .8rem; animation: in .2s ease; }
   .toast.err { border-color: var(--danger); color: var(--danger); }
   @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+  .stale { background: var(--danger); color: #141414; padding: 10px 28px; font-size: .8rem; text-align: center; }
   #loading { padding: 80px; text-align: center; color: var(--dim); }
 
   @media (max-width: 760px) {
@@ -156,11 +163,12 @@
 <script>
 const PAGES = {
   d2: { label: 'Digital 2D', kind: 'years', dir: 'images/Digital2d', site: 'digital-2d.html' },
+  ve: { label: 'Visual Exploration', kind: 'flat', dir: 'images/VisualExploration', site: 'visual-exploration.html' },
   d3: { label: 'Digital 3D', kind: 'projects', dir: 'images/Digital3d', site: 'digital-3d.html' },
   tr: { label: 'Traditional', kind: 'flat', dir: 'images/Traditional', site: 'traditional.html' },
 };
-const TABS = [['home', 'Accueil'], ['d2', 'Digital 2D'], ['d3', 'Digital 3D'], ['tr', 'Traditional']];
-const CAT_LABELS = { d2: 'Digital 2D', d3: 'Digital 3D', tr: 'Traditional' };
+const TABS = [['home', 'Accueil'], ['d2', 'Digital 2D'], ['ve', 'Visual Exploration'], ['d3', 'Digital 3D'], ['tr', 'Traditional']];
+const CAT_LABELS = { d2: 'Digital 2D', ve: 'Visual Exploration', d3: 'Digital 3D', tr: 'Traditional' };
 
 let S = null;                       // { galleries, home }
 let tab = location.hash.slice(1) || localStorage.getItem('editor-tab') || 'd2';
@@ -327,11 +335,18 @@ function render() {
   renderGallery(tab);
 }
 
+// Même rendu que .thumb-img sur le site (voir style.css : --pos / --zoom)
+const DEFAULT_CROP = { x: 50, y: 0, z: 1 };
+function cropStyle(c) {
+  c = c || DEFAULT_CROP;
+  return `object-position:${c.x}% ${c.y}%;transform-origin:${c.x}% ${c.y}%;scale:${c.z}`;
+}
+
 function tileHtml(it, attrs = '') {
   const src = it._preview || (it.src ? url(it.src) : '');
   const multi = it.images && it.images.length > 1 ? `<span class="multi">${it.images.length} images</span>` : '';
   return `<div class="tile${it._uploading ? ' uploading' : ''}" ${attrs}>
-    ${src ? `<img src="${esc(src)}" loading="lazy" alt="">` : ''}${multi}
+    ${src ? `<img src="${esc(src)}" loading="lazy" alt="" style="${cropStyle(it.crop)}">` : ''}${multi}
     <span class="cap">${esc(it.title)}</span>
     ${it._uploading ? '' : '<button class="x" data-act="del" title="Retirer de la galerie">×</button>'}
   </div>`;
@@ -340,6 +355,8 @@ function tileHtml(it, attrs = '') {
 function renderGallery(key) {
   const g = S.galleries[key], page = PAGES[key];
   const isFlat = page.kind === 'flat', isProj = page.kind === 'projects';
+  // page encore vide : on propose directement l'année en cours
+  if (!g.groups.length) g.groups.push({ year: String(new Date().getFullYear()), cls: ' reveal in', items: [] });
   const total = g.groups.reduce((n, gr) => n + gr.items.length, 0);
   const addLabel = isProj ? '+ Nouveau projet' : '+ Ajouter des images';
   $('#main').innerHTML = `
@@ -397,7 +414,7 @@ function renderHome() {
         </div>
       </div>
     </div>
-    ${['d2', 'd3', 'tr'].map(c => `
+    ${Object.keys(CAT_LABELS).map(c => `
       <section class="group" data-cat="${c}">
         <div class="group-head">
           <h2>Défilement « ${CAT_LABELS[c]} »</h2>
@@ -453,13 +470,21 @@ function renderDrawer() {
       </div>`).join('')}</div>
     <div class="row" style="margin-top:12px"><button class="btn" data-act="img-add">+ Ajouter des images</button></div>`;
 
+  const c = it.crop || DEFAULT_CROP;
   $('#d-body').innerHTML = `
-    ${isProj ? '' : `<img class="d-prev" src="${esc(url(it.src))}" alt="">`}
+    <div class="field"><span class="label">Cadrage de la vignette${isProj ? ' (image ★)' : ''}</span></div>
+    <div class="crop-frame" id="crop" title="Glisse pour recadrer · molette pour zoomer"><img src="${esc(url(it.src))}" alt="" draggable="false" style="${cropStyle(c)}"></div>
+    <div class="crop-tools">
+      <span class="label">Zoom</span><input type="range" id="crop-z" min="1" max="3" step="0.01" value="${c.z}">
+      <button class="btn ghost" data-act="crop-reset" ${it.crop ? '' : 'disabled'}>Réinitialiser</button>
+    </div>
     <div class="field"><span class="label">Titre</span><input id="d-title" value="${esc(it.title)}"></div>
     ${yearField}
     ${projImgs}
     ${isProj ? '' : `<p class="hint" style="margin:0 0 12px">Fichier : ${esc(it.src)}</p><button class="btn" data-act="replace">Remplacer l'image</button>`}`;
   $('#d-foot').innerHTML = `<button class="btn danger" data-act="item-del">Retirer de la galerie</button><button class="btn" data-act="close">Fermer</button>`;
+
+  setupCrop(key, it);
 
   $('#d-title').addEventListener('change', e => {
     const v = e.target.value.trim();
@@ -482,6 +507,53 @@ function renderDrawer() {
       renderDrawer();
     },
   });
+}
+
+// Recadrage : on glisse l'image dans le cadre 3:4, la molette ou le curseur zooment
+function setupCrop(key, it) {
+  const frame = $('#crop'), img = frame.querySelector('img'), slider = $('#crop-z');
+  const c = { ...(it.crop || DEFAULT_CROP) };
+  const apply = () => { img.style.cssText = cropStyle(c); slider.value = c.z; };
+  const save = () => {
+    const same = it.crop ? it.crop.x === c.x && it.crop.y === c.y && it.crop.z === c.z
+      : c.x === DEFAULT_CROP.x && c.y === DEFAULT_CROP.y && c.z === 1;
+    if (same) return;
+    change(key, g => { g.groups[selected.gi].items[selected.ii].crop = { ...c }; });
+    $('[data-act="crop-reset"]').disabled = false;
+  };
+  const clamp = v => Math.round(Math.min(100, Math.max(0, v)) * 10) / 10;
+
+  // Déplacement en % de background-position : tient compte du débordement « cover » et du zoom
+  let drag = null;
+  frame.addEventListener('pointerdown', e => {
+    if (!img.naturalWidth) return;
+    const W = frame.clientWidth, H = frame.clientHeight;
+    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    drag = { px: e.clientX, py: e.clientY, x: c.x, y: c.y,
+      dw: (img.naturalWidth * s - W) * c.z + W * (c.z - 1), dh: (img.naturalHeight * s - H) * c.z + H * (c.z - 1) };
+    frame.setPointerCapture(e.pointerId);
+    frame.classList.add('dragging');
+  });
+  frame.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (drag.dw > 0.5) c.x = clamp(drag.x - (e.clientX - drag.px) / drag.dw * 100);
+    if (drag.dh > 0.5) c.y = clamp(drag.y - (e.clientY - drag.py) / drag.dh * 100);
+    apply();
+  });
+  const end = () => { if (!drag) return; drag = null; frame.classList.remove('dragging'); save(); };
+  frame.addEventListener('pointerup', end);
+  frame.addEventListener('pointercancel', end);
+
+  let wheelTimer;
+  frame.addEventListener('wheel', e => {
+    e.preventDefault();
+    c.z = Math.round(Math.min(3, Math.max(1, c.z - e.deltaY * 0.0015)) * 100) / 100;
+    apply();
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(save, 350);
+  }, { passive: false });
+  slider.addEventListener('input', () => { c.z = +slider.value; apply(); });
+  slider.addEventListener('change', save);
 }
 
 function ensureYear(key, year) {
@@ -551,9 +623,9 @@ function pickFromSite(title, { multi = false, only = null } = {}) {
   return new Promise(resolve => {
     const draw = () => {
       modal(`<h3>${esc(title)}</h3>
-        <div class="picker-tabs">${(only ? [only] : ['d2', 'd3', 'tr']).map(k =>
+        <div class="picker-tabs">${(only ? [only] : Object.keys(CAT_LABELS)).map(k =>
           `<button class="btn ${k === cur ? '' : 'ghost'}" data-src="${k}">${CAT_LABELS[k]}</button>`).join('')}</div>
-        <div class="grid picker-grid">${sources[cur].map(p =>
+        <div class="grid picker-grid">${(sources[cur] || []).map(p =>
           `<div class="tile ${sel.includes(p) ? 'sel' : ''}" data-p="${esc(p)}"><img src="${esc(url(p))}" loading="lazy" alt=""></div>`).join('')}</div>
         <div class="actions"><span class="hint" style="margin:0;flex:1">${multi ? sel.length + ' sélectionnée(s)' : 'Clique sur une image'}</span>
           <button class="btn ghost" id="pk-no">Annuler</button>${multi ? '<button class="btn primary" id="pk-ok">Ajouter</button>' : ''}</div>`, true);
@@ -656,6 +728,10 @@ document.addEventListener('click', async e => {
     const { key } = selected;
     const it = currentItem();
     if (act === 'close') return closeDrawer();
+    if (act === 'crop-reset') {
+      change(key, g => { g.groups[selected.gi].items[selected.ii].crop = null; });
+      return renderDrawer();
+    }
     if (act === 'item-del') {
       change(key, g => { g.groups[selected.gi].items.splice(selected.ii, 1); });
       closeDrawer();
@@ -667,7 +743,7 @@ document.addEventListener('click', async e => {
       setSaveState('Import…', 'busy');
       try {
         const p = await upload(f, folderOf(it.src));
-        change(key, g => { g.groups[selected.gi].items[selected.ii].src = p; });
+        change(key, g => { const x = g.groups[selected.gi].items[selected.ii]; x.src = p; x.crop = null; });
         renderDrawer();
         toast('Image remplacée');
       } catch (err) { toast(err.message, true); }
@@ -686,7 +762,7 @@ document.addEventListener('click', async e => {
     }
     const pt = e.target.closest('[data-pi]');
     if (pt && act === 'cover') {
-      change(key, g => { const x = g.groups[selected.gi].items[selected.ii]; x.src = x.images[+pt.dataset.pi]; });
+      change(key, g => { const x = g.groups[selected.gi].items[selected.ii]; x.src = x.images[+pt.dataset.pi]; x.crop = null; });
       renderDrawer();
     }
     if (pt && act === 'img-del') {
@@ -738,6 +814,10 @@ window.addEventListener('beforeunload', e => { if (pending.size) { flushSaves();
   renderTabs();
   try {
     S = await api('state');
+    // ancienne version du serveur (pas de champ « stale ») ou code modifié depuis le lancement
+    if (S.stale !== false) document.body.insertAdjacentHTML('afterbegin',
+      '<div class="stale">L’éditeur a été mis à jour : ferme la fenêtre noire et relance le raccourci « Editeur du portfolio ». ' +
+      'Tant que ce n’est pas fait, certaines modifications ne seront pas enregistrées.</div>');
     $('#changes').textContent = S.changes;
     render();
   } catch (e) {

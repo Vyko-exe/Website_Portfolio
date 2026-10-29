@@ -29,11 +29,10 @@
       <button id="lb-close">✕</button>
     </div>
     <div id="lb-scroll"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/12.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/04.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/01.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/02.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/03.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/05.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/06.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/07.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/08.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/09.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/10.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/11.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/13.png"><img class="lb-image loaded" src="images/Digital3d/2025/GuangJian Inspired sculpt/14.png"></div>
-    <div id="lb-scroll-hint" class="">
+    <button id="lb-scroll-hint" type="button" aria-label="Image suivante">
       <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      <span>scroll</span>
-      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </div>
+      <span id="lb-count"></span>
+    </button>
     <button id="lb-prev">‹</button>
     <button id="lb-next">›</button>
   </div>
@@ -119,6 +118,7 @@
     <div id="img-panel-list" style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start"></div>
   </div>
 
+  <script src="media.js"></script>
   <script>
     // ── REORDER MODE ─────────────────────────────────────────────────────────
     let reorderActive = false;
@@ -200,7 +200,7 @@
       selectedCover = null;
 
       const imgEl = thumb.querySelector('.thumb-img');
-      const currentCover = imgEl ? (imgEl.dataset.bg || imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'').replace(/['"]/g,'')) : '';
+      const currentCover = Media.src(imgEl);
 
       getImages(thumb).forEach(src => {
         const card = document.createElement('div');
@@ -270,11 +270,12 @@
       if (!imgPanelThumb) return;
       const newOrder = [...imgPanelList.children].map(r => r.dataset.src);
       imgPanelThumb.dataset.images = newOrder.join(',');
+      Media.badges();
       const cover = selectedCover || newOrder[0];
       const imgEl = imgPanelThumb.querySelector('.thumb-img');
       if (imgEl && cover) {
         imgEl.dataset.bg = cover;
-        imgEl.style.backgroundImage = "url('" + cover + "')";
+        Media.bg(imgEl);
       }
       const newTitle = imgPanelTitle.value.trim();
       if (newTitle) {
@@ -298,10 +299,11 @@
         t.style.cssText = '';
         const img = t.querySelector('.thumb-img');
         if (img) {
-          const src = img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'').replace(/['"]/g,'');
-          if (src) { img.dataset.bg = src; img.removeAttribute('style'); }
+          const src = Media.src(img);
+          if (src) { img.dataset.bg = src; img.removeAttribute('style'); img.removeAttribute('data-src'); }
         }
       });
+      clone.querySelectorAll('.thumb-count').forEach(el => el.remove());
       clone.querySelector('#reorder-bar').style.display = 'none';
       clone.querySelector('#img-panel').style.display = 'none';
       clone.querySelector('#img-panel-list').innerHTML = '';
@@ -343,11 +345,12 @@
     const lazyObs = new IntersectionObserver(e => e.forEach(x => {
       if (x.isIntersecting) {
         const el = x.target;
-        if (el.dataset.bg) { el.style.backgroundImage = "url('"+el.dataset.bg+"')"; delete el.dataset.bg; }
+        Media.bg(el);
         lazyObs.unobserve(el);
       }
     }), {rootMargin:'200px'});
     document.querySelectorAll('.thumb-img[data-bg]').forEach(el => lazyObs.observe(el));
+    Media.badges();
 
     // Reveal on scroll
     const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.05});
@@ -366,7 +369,7 @@
     function getImages(thumb) {
       if (thumb.dataset.images) return thumb.dataset.images.split(',').map(s => s.trim());
       const imgEl = thumb.querySelector('.thumb-img');
-      const src = imgEl ? imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
+      const src = Media.src(imgEl);
       return src ? [src] : ['ph:1'];
     }
 
@@ -382,14 +385,13 @@
       lbScroll.innerHTML  = '';
       lbScroll.scrollTop  = 0;
 
-      if (images.length > 1) lbHint.classList.add('visible');
-      else lbHint.classList.remove('visible');
+      lbScroll.classList.toggle('multi', images.length > 1);
 
       images.forEach((src, i) => {
         if (src && !src.startsWith('ph:')) {
           const img = document.createElement('img');
           img.className = 'lb-image';
-          img.src = src;
+          Media.img(img, src);
           img.onload = () => img.classList.add('loaded');
           lbScroll.appendChild(img);
         } else {
@@ -403,9 +405,31 @@
       if (!lb.classList.contains('open')) history.pushState({lb:true}, '');
       lb.classList.add('open');
       document.body.style.overflow = 'hidden';
+      updateHint();
     }
 
-    lbScroll.addEventListener('scroll', () => { if (lbScroll.scrollTop > 40) lbHint.classList.remove('visible'); });
+    // Indicateur "1 / 8" : suit l'image affichée, disparaît en bas de la série
+    const lbCount = document.getElementById('lb-count');
+    function currentIndex() {
+      const items = [...lbScroll.children];
+      const mid = lbScroll.scrollTop + lbScroll.clientHeight * 0.4;
+      let idx = 0;
+      items.forEach((el, i) => { if (el.offsetTop <= mid) idx = i; });
+      return idx;
+    }
+    function updateHint() {
+      const n = lbScroll.children.length;
+      const atEnd = lbScroll.scrollTop + lbScroll.clientHeight >= lbScroll.scrollHeight - 4;
+      lbCount.textContent = (currentIndex() + 1) + ' / ' + n;
+      lbHint.classList.toggle('visible', n > 1 && !atEnd);
+    }
+    lbScroll.addEventListener('scroll', updateHint, {passive:true});
+    lbScroll.addEventListener('load', updateHint, true);
+    lbHint.addEventListener('click', e => {
+      e.stopPropagation();
+      const next = lbScroll.children[currentIndex() + 1];
+      if (next) lbScroll.scrollTo({top: next.offsetTop - 8});
+    });
 
     function close() {
       if (!lb.classList.contains('open')) return;
@@ -431,6 +455,7 @@
     document.getElementById('lb-close').addEventListener('click', close);
     document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); navProject(-1); });
     document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); navProject(1); });
+    Media.swipe(lb, () => navProject(-1), () => navProject(1));
     document.addEventListener('keydown', e => {
       if (imgPanel.style.display !== 'none') { if (e.key === 'Escape') closeImagePanel(); return; }
       if (!lb.classList.contains('open')) return;
