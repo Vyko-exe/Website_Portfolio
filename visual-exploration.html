@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Exploration — Victor Dalbin</title>
+  <link rel="icon" type="image/png" href="Favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="fonts/Tritopani.otf" as="font" type="font/otf" crossorigin>
+  <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}if('onpagereveal' in window&&/^https?:/.test(location.protocol))document.documentElement.classList.add('vt')</script>
+  <script src="theme.js" defer></script>
+  <script src="menu.js" defer></script>
+  <script src="smooth.js" defer></script>
+</head>
+<body class="has-side gallery pg-2d" style="padding-bottom: 60px;">
+  
+  
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" class="">
+    <button id="lb-close">✕</button>
+    <button id="lb-prev">‹</button>
+    <div id="lb-content"><img id="lb-img"></div>
+    <button id="lb-next">›</button>
+    <div id="lb-meta">
+      <span id="lb-meta-title">11</span>
+      <span id="lb-meta-info">2025</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <!-- Menu : même colonne que la home -->
+  <aside id="side">
+    <a href="index.html" class="s-sign">Victor<br> Dalbin</a>
+    <div class="s-bottom">
+      <ul class="s-menu">
+        <li class="s-main"><a href="index.html">Homepage</a></li>
+        <li class="s-group">
+          <span class="s-sub">
+            <a href="digital-2d.html">Digital 2D</a>
+            <a href="visual-exploration.html" class="active">Visual Exploration</a>
+          </span>
+          <a href="digital-3d.html">Digital 3D</a>
+          <a href="traditional.html">Traditional</a>
+        </li>
+        <li class="s-main"><a href="about.html">About &amp; Contact</a></li>
+      </ul>
+    </div>
+    <button class="theme-toggle" type="button">Night mode</button>
+  </aside>
+  <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="side"><span></span></button>
+
+  <!-- MOBILE MENU -->
+  
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+<h1 class="page-title">Visual Exploration</h1>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="thumb-strip reveal in">
+
+      <div class="thumb" data-title="Winterfell"><div class="thumb-img" data-bg="images/VisualExploration/Winterfell.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">Winterfell</div></div>
+      <div class="thumb" data-title="didiergraffet"><div class="thumb-img" data-bg="images/VisualExploration/didiergraffet.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">didiergraffet</div></div>
+      <div class="thumb" data-title="7"><div class="thumb-img" data-bg="images/VisualExploration/7.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">7</div></div>
+      <div class="thumb" data-title="5"><div class="thumb-img" data-bg="images/VisualExploration/5.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">5</div></div>
+      <div class="thumb" data-title="4"><div class="thumb-img" data-bg="images/VisualExploration/4.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">4</div></div>
+      <div class="thumb" data-title="3"><div class="thumb-img" data-bg="images/VisualExploration/3.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">3</div></div>
+      <div class="thumb" data-title="v2"><div class="thumb-img" data-bg="images/VisualExploration/v2.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">v2</div></div>
+      <div class="thumb" data-title="v1"><div class="thumb-img" data-bg="images/VisualExploration/v1.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">v1</div></div>
+      <div class="thumb" data-title="VD02"><div class="thumb-img" data-bg="images/VisualExploration/VD02.png"></div><div class="thumb-ov"></div><div class="thumb-label">VD02</div></div>
+      <div class="thumb" data-title="VD01"><div class="thumb-img" data-bg="images/VisualExploration/VD01.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">VD01</div></div>
+      <div class="thumb" data-title="Illu Impro 1"><div class="thumb-img" data-bg="images/VisualExploration/Illu_Impro_1.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">Illu Impro 1</div></div>
+      <div class="thumb" data-title="StudyD4"><div class="thumb-img" data-bg="images/VisualExploration/StudyD4.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">StudyD4</div></div>
+      <div class="thumb" data-title="Sans titre-1"><div class="thumb-img" data-bg="images/VisualExploration/Sans titre-1.jpg"></div><div class="thumb-ov"></div><div class="thumb-label">Sans titre-1</div></div>
+
+    </div>
+  </div><!-- /content -->
+
+  <!-- BACK -->
+
+  <!-- TITLE EDIT PANEL -->
+  <div id="title-panel" style="display: none; position: fixed; inset: 0px; z-index: 1001; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+    <div style="background:rgba(20,20,20,.98);border:1px solid rgba(255,255,255,.1);padding:32px 40px;display:flex;flex-direction:column;gap:20px;min-width:340px">
+      <span style="font-size:.42rem;letter-spacing:.3em;text-transform:uppercase;color:#5a5a5a">Modifier le titre</span>
+      <input id="title-panel-input" type="text" style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:#e8e8e8;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.25);outline:none;padding:4px 2px;width:100%">
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button id="title-panel-confirm" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#e8e8e8;padding:6px 18px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Confirmer</button>
+        <button id="title-panel-cancel" style="background:none;border:1px solid rgba(255,255,255,.2);color:#a0a0a0;padding:6px 18px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REORDER BAR -->
+  <div id="reorder-bar" style="display: none; position: fixed; bottom: 0px; left: 0px; right: 0px; z-index: 500; background: rgba(20, 20, 20, 0.97); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 12px 56px; align-items: center; justify-content: space-between; gap: 16px;">
+    <span style="font-size:.48rem;letter-spacing:.25em;text-transform:uppercase;color:#a0a0a0">Mode réorganisation — glisse les images</span>
+    <div style="display:flex;gap:10px">
+      <button id="reorder-save" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Sauvegarder (télécharger)</button>
+      <button id="reorder-exit" style="background:none;border:1px solid rgba(255,255,255,.2);color:#e8e8e8;padding:6px 16px;font-size:.44rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer">Quitter</button>
+    </div>
+  </div>
+
+  <script>
+    // ── REORDER MODE ─────────────────────────────────────────────────────────
+    let reorderActive = false;
+    let dragSrc = null;
+    let didDrag = false;
+    const reorderBar = document.getElementById('reorder-bar');
+
+    // SECRET TRIGGER : 5 clics rapides sur le titre de la page
+    let titleClicks = 0, titleTimer;
+    document.querySelector('.page-title').addEventListener('click', () => {
+      titleClicks++;
+      clearTimeout(titleTimer);
+      titleTimer = setTimeout(() => { titleClicks = 0; }, 1500);
+      if (titleClicks >= 5) { titleClicks = 0; reorderActive ? exitReorder() : enterReorder(); }
+    });
+
+    function enterReorder() {
+      reorderActive = true;
+      reorderBar.style.display = 'flex';
+      document.body.style.paddingBottom = '60px';
+      document.querySelectorAll('.thumb').forEach(t => {
+        t.draggable = true;
+        t.style.cursor = 'grab';
+        t.style.outline = '1px dashed rgba(255,255,255,.25)';
+        t.addEventListener('dragstart', onDragStart);
+        t.addEventListener('dragover',  onDragOver);
+        t.addEventListener('drop',      onDrop);
+        t.addEventListener('dragend',   onDragEnd);
+      });
+    }
+
+    function exitReorder() {
+      reorderActive = false;
+      reorderBar.style.display = 'none';
+      document.body.style.paddingBottom = '';
+      document.querySelectorAll('.thumb').forEach(t => {
+        t.draggable = false;
+        t.style.cursor = '';
+        t.style.outline = '';
+        t.removeEventListener('dragstart', onDragStart);
+        t.removeEventListener('dragover',  onDragOver);
+        t.removeEventListener('drop',      onDrop);
+        t.removeEventListener('dragend',   onDragEnd);
+      });
+    }
+
+    function onDragStart(e) { dragSrc = this; didDrag = false; this.style.opacity = '.4'; }
+    function onDragEnd()    { this.style.opacity = ''; didDrag = true; setTimeout(() => { didDrag = false; }, 100); document.querySelectorAll('.thumb').forEach(t => t.style.outline = '1px dashed rgba(255,255,255,.25)'); }
+    function onDragOver(e)  { e.preventDefault(); this.style.outline = '1px solid rgba(255,255,255,.7)'; }
+    function onDrop(e) {
+      e.preventDefault();
+      if (dragSrc === this) return;
+      const strip = this.parentNode;
+      const srcIdx = [...strip.children].indexOf(dragSrc);
+      const tgtIdx = [...strip.children].indexOf(this);
+      if (srcIdx < tgtIdx) strip.insertBefore(dragSrc, this.nextSibling);
+      else strip.insertBefore(dragSrc, this);
+    }
+
+    // ── SAVE ─────────────────────────────────────────────────────────────────
+    function buildCleanHTML() {
+      const clone = document.documentElement.cloneNode(true);
+      clone.removeAttribute('data-theme');   // le mode nuit ne doit pas être figé dans le fichier sauvegardé
+      clone.classList.remove('menu-open', 'leaving');
+      clone.querySelectorAll('.page-meta').forEach(el => el.remove());   // ajouté par smooth.js, ne pas le figer
+      clone.querySelectorAll('.thumb').forEach(t => {
+        t.removeAttribute('draggable');
+        t.style.cssText = '';
+        const img = t.querySelector('.thumb-img');
+        if (img) {
+          const src = img.dataset.bg || img.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'').replace(/['"]/g,'');
+          if (src) { img.dataset.bg = src; img.removeAttribute('style'); }
+        }
+      });
+      clone.querySelector('#reorder-bar').style.display = 'none';
+      clone.querySelector('#title-panel').style.display = 'none';
+      return '<!DOCTYPE html>\n' + clone.outerHTML;
+    }
+
+    function saveToFile() {
+      const btn = document.getElementById('reorder-save');
+      try {
+        const blob = new Blob([buildCleanHTML()], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'visual-exploration.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        btn.textContent = 'Téléchargé !';
+        setTimeout(() => btn.textContent = 'Sauvegarder (télécharger)', 2000);
+      } catch(e) {
+        btn.textContent = 'Erreur : ' + e.message;
+        setTimeout(() => btn.textContent = 'Sauvegarder (télécharger)', 3000);
+      }
+    }
+
+    document.getElementById('reorder-exit').addEventListener('click', exitReorder);
+    document.getElementById('reorder-save').addEventListener('click', saveToFile);
+
+    // ── INIT ──────────────────────────────────────────────────────────────────
+    // Remove thumbs with no image
+    document.querySelectorAll('.thumb').forEach(t => {
+      const img = t.querySelector('.thumb-img');
+      if (!img || (!img.dataset.bg && !img.style.backgroundImage)) t.remove();
+    });
+
+    // Lazy load background images
+    const lazyObs = new IntersectionObserver(e => e.forEach(x => {
+      if (x.isIntersecting) {
+        const el = x.target;
+        if (el.dataset.bg) { el.style.backgroundImage = "url('"+el.dataset.bg+"')"; delete el.dataset.bg; }
+        lazyObs.unobserve(el);
+      }
+    }), {rootMargin:'200px'});
+    document.querySelectorAll('.thumb-img[data-bg]').forEach(el => lazyObs.observe(el));
+
+    // Reveal on scroll
+    const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in') }), {threshold:.05});
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // ── LIGHTBOX ─────────────────────────────────────────────────────────────
+    const lb      = document.getElementById('lightbox');
+    const lbCont  = document.getElementById('lb-content');
+    const lbTitle = document.getElementById('lb-meta-title');
+    const lbInfo  = document.getElementById('lb-meta-info');
+    let current = 0;
+    const all = () => [...document.querySelectorAll('.thumb')];
+
+    function open(i) {
+      const thumbs = all();
+      if (!thumbs[i]) return;
+      current = i;
+      const t = thumbs[i];
+      const imgEl = t.querySelector('.thumb-img');
+      const src = imgEl ? imgEl.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
+      lbTitle.textContent = t.dataset.title || '';
+      lbInfo.textContent  = t.dataset.year || '';
+      lbCont.innerHTML = '';
+      if (src) {
+        const img = document.createElement('img');
+        img.id = 'lb-img';
+        img.src = src;
+        img.onload = () => img.classList.add('loaded');
+        lbCont.appendChild(img);
+      } else {
+        const box = document.createElement('div');
+        box.className = 'lb-ph-box';
+        const num = t.querySelector('.thumb-ph-num');
+        box.innerHTML = '<span>'+(num?num.textContent:(i+1))+'</span>';
+        lbCont.appendChild(box);
+      }
+      if (!lb.classList.contains('open')) history.pushState({lb:true}, '');
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      if (!lb.classList.contains('open')) return;
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+      history.back();
+    }
+
+    window.addEventListener('popstate', () => {
+      if (lb.classList.contains('open')) { lb.classList.remove('open'); document.body.style.overflow = ''; }
+    });
+
+    // ── TITLE EDIT PANEL ─────────────────────────────────────────────────────
+    const titlePanel      = document.getElementById('title-panel');
+    const titlePanelInput = document.getElementById('title-panel-input');
+    let   titlePanelThumb = null;
+
+    function openTitlePanel(thumb) {
+      titlePanelThumb = thumb;
+      titlePanelInput.value = thumb.dataset.title || '';
+      titlePanel.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => titlePanelInput.focus(), 50);
+    }
+
+    function closeTitlePanel() {
+      titlePanel.style.display = 'none';
+      document.body.style.overflow = '';
+      titlePanelThumb = null;
+    }
+
+    document.getElementById('title-panel-confirm').addEventListener('click', () => {
+      if (!titlePanelThumb) return;
+      const newTitle = titlePanelInput.value.trim();
+      if (newTitle) {
+        titlePanelThumb.dataset.title = newTitle;
+        const label = titlePanelThumb.querySelector('.thumb-label');
+        if (label) label.textContent = newTitle;
+      }
+      closeTitlePanel();
+    });
+
+    document.getElementById('title-panel-cancel').addEventListener('click', closeTitlePanel);
+
+    titlePanelInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('title-panel-confirm').click();
+      if (e.key === 'Escape') closeTitlePanel();
+    });
+
+    // ── LIGHTBOX + CLICK ─────────────────────────────────────────────────────
+    all().forEach(t => t.addEventListener('click', () => {
+      if (reorderActive) { if (!didDrag) openTitlePanel(t); }
+      else open(all().indexOf(t));
+    }));
+    document.getElementById('lb-close').addEventListener('click', close);
+    lb.addEventListener('click', e => { if (e.target === lb) close(); });
+    document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); const n=all().length; open((current-1+n)%n); });
+    document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); open((current+1)%all().length); });
+    document.addEventListener('keydown', e => {
+      if (titlePanel.style.display !== 'none') return;
+      if (!lb.classList.contains('open')) return;
+      if (e.key==='Escape') close();
+      if (e.key==='ArrowLeft')  { const n=all().length; open((current-1+n)%n); }
+      if (e.key==='ArrowRight') open((current+1)%all().length);
+    });
+    </script>
+
+
+</body></html>
