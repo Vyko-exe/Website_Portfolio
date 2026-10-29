@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éditeur — Portfolio</title>
+<link rel="icon" href="/site/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Tenor+Sans&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+  :root {
+    --bg: #0e0e0e; --panel: #161616; --panel-2: #1d1d1d; --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.18);
+    --text: #e8e8e8; --muted: #8a8a8a; --dim: #5a5a5a; --accent: #d9c7a3; --danger: #e06c6c; --ok: #8fc79a;
+    --serif: 'Playfair Display', Georgia, serif; --sans: 'Tenor Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .label { font-size: .68rem; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+
+  /* ── Barre du haut ── */
+  header { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 24px; padding: 14px 28px;
+    background: rgba(14,14,14,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .brand { font-family: var(--serif); font-style: italic; font-size: 1.25rem; white-space: nowrap; }
+  .brand small { font-family: var(--sans); font-style: normal; font-size: .62rem; letter-spacing: .3em; text-transform: uppercase; color: var(--dim); margin-left: 10px; }
+  nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+  nav button { background: none; border: 0; padding: 8px 14px; letter-spacing: .18em; text-transform: uppercase; font-size: .7rem; color: var(--muted); border-bottom: 1px solid transparent; white-space: nowrap; }
+  nav button:hover { color: var(--text); }
+  nav button.on { color: var(--text); border-bottom-color: var(--accent); }
+  .tools { display: flex; align-items: center; gap: 10px; }
+  #save-state { font-size: .7rem; color: var(--dim); min-width: 110px; text-align: right; }
+  #save-state.busy { color: var(--accent); }
+  #save-state.err { color: var(--danger); }
+  .btn { background: rgba(255,255,255,.05); border: 1px solid var(--line-2); padding: 8px 14px; font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .btn:hover { background: rgba(255,255,255,.1); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn.primary { background: var(--accent); color: #141414; border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.danger { border-color: rgba(224,108,108,.5); color: var(--danger); }
+  .btn.ghost { background: none; }
+  .badge { background: #141414; color: var(--accent); border-radius: 10px; padding: 1px 7px; font-size: .65rem; letter-spacing: 0; }
+
+  main { padding: 28px 28px 120px; max-width: 1500px; margin: 0 auto; }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+  .page-head h1 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 2.4rem; margin: 0; }
+  .hint { color: var(--dim); font-size: .78rem; margin: 6px 0 26px; line-height: 1.6; }
+
+  /* ── Années / galeries ── */
+  .group { border: 1px dashed transparent; padding: 18px; margin: 0 -18px 18px; transition: border-color .15s, background .15s; }
+  .group.drop { border-color: var(--accent); background: rgba(217,199,163,.05); }
+  .group-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .group-head h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.5rem; margin: 0; }
+  .group-head .count { color: var(--dim); font-size: .72rem; }
+  .group-head .spacer { flex: 1; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; min-height: 60px; }
+  .grid:empty::before { content: 'Glisse des images ici'; color: var(--dim); font-size: .75rem; padding: 20px 0; }
+  .tile { position: relative; aspect-ratio: 1; background: var(--panel); overflow: hidden; cursor: grab; outline: 1px solid var(--line); }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transition: transform .3s; }
+  .tile:hover img { transform: scale(1.04); }
+  .tile .cap { position: absolute; inset: auto 0 0 0; padding: 22px 8px 7px; font-size: .72rem; background: linear-gradient(transparent, rgba(0,0,0,.85)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .multi { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,.7); font-size: .62rem; padding: 2px 6px; }
+  .tile .x { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border: 0; background: rgba(0,0,0,.7); color: #fff; opacity: 0; transition: opacity .15s; font-size: 14px; line-height: 1; }
+  .tile:hover .x { opacity: 1; }
+  .tile .x:hover { background: var(--danger); }
+  .tile.uploading { cursor: default; }
+  .tile.uploading::after { content: 'Import…'; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); font-size: .72rem; letter-spacing: .15em; }
+  .sortable-ghost { opacity: .3; }
+  .sortable-chosen { outline: 2px solid var(--accent); }
+
+  /* ── Accueil ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 28px; }
+  .card { background: var(--panel); border: 1px solid var(--line); padding: 20px; }
+  .card h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.2rem; margin: 0 0 4px; }
+  .card p { color: var(--dim); font-size: .76rem; margin: 0 0 14px; line-height: 1.5; }
+  .hero-prev { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #000; margin-bottom: 12px; }
+  .photo-prev { width: 140px; aspect-ratio: 3/4; object-fit: cover; display: block; background: #000; margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field input, .field select { background: transparent; border: 0; border-bottom: 1px solid var(--line-2); padding: 6px 2px; outline: none; font-size: 1rem; }
+  .field input:focus { border-bottom-color: var(--accent); }
+  .field select option { background: var(--panel); }
+  .grid.small { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+
+  /* ── Panneau latéral ── */
+  #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); background: var(--panel); border-left: 1px solid var(--line);
+    z-index: 80; transform: translateX(100%); transition: transform .25s ease; display: flex; flex-direction: column; }
+  #drawer.open { transform: none; box-shadow: -30px 0 60px rgba(0,0,0,.5); }
+  #drawer .d-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  #drawer .d-body { padding: 20px; overflow-y: auto; flex: 1; }
+  #drawer .d-prev { width: 100%; max-height: 46vh; object-fit: contain; background: #000; display: block; margin-bottom: 18px; }
+  #drawer .d-foot { padding: 16px 20px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: space-between; }
+  .icon-btn { background: none; border: 0; font-size: 22px; color: var(--muted); line-height: 1; padding: 0 4px; }
+  .icon-btn:hover { color: var(--text); }
+  .proj-grid { grid-template-columns: repeat(3, 1fr); }
+  .proj-grid .tile.cover { outline: 2px solid var(--accent); }
+  .tile .star { position: absolute; top: 6px; left: 6px; width: 24px; height: 24px; border: 0; background: rgba(0,0,0,.7); color: #fff; font-size: 13px; opacity: 0; }
+  .tile:hover .star, .tile.cover .star { opacity: 1; }
+  .tile.cover .star { color: var(--accent); }
+
+  /* ── Fenêtres ── */
+  .modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal.open { display: flex; }
+  .modal .box { background: var(--panel); border: 1px solid var(--line-2); padding: 26px 28px; width: min(520px, 100%); max-height: 90vh; display: flex; flex-direction: column; }
+  .modal .box.wide { width: min(1100px, 100%); }
+  .modal h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.4rem; margin: 0 0 6px; }
+  .modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .picker-tabs { display: flex; gap: 4px; margin: 10px 0 14px; flex-wrap: wrap; }
+  .picker-grid { overflow-y: auto; flex: 1; min-height: 200px; }
+  .picker-grid .tile { cursor: pointer; }
+  .picker-grid .tile.sel { outline: 3px solid var(--accent); }
+  .picker-grid .tile.sel::before { content: '✓'; position: absolute; top: 6px; right: 6px; z-index: 2; background: var(--accent); color: #141414; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
+  pre.log { background: #0a0a0a; border: 1px solid var(--line); padding: 12px; font-size: .75rem; white-space: pre-wrap; max-height: 200px; overflow: auto; color: var(--muted); }
+
+  #toasts { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .toast { background: #222; border: 1px solid var(--line-2); padding: 10px 18px; font-size: .8rem; animation: in .2s ease; }
+  .toast.err { border-color: var(--danger); color: var(--danger); }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+  #loading { padding: 80px; text-align: center; color: var(--dim); }
+
+  @media (max-width: 760px) {
+    header { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+    nav { order: 3; width: 100%; flex: none; }
+    main { padding: 20px 16px 100px; }
+    .group { margin: 0 -10px 12px; padding: 10px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    #save-state { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Vyko <small>Éditeur</small></div>
+  <nav id="tabs"></nav>
+  <div class="tools">
+    <span id="save-state">✓ Enregistré</span>
+    <button class="btn ghost" id="undo" title="Annuler (Ctrl+Z)" disabled>↶ Annuler</button>
+    <a class="btn ghost" id="view-site" href="/site/index.html" target="_blank">Voir le site ↗</a>
+    <button class="btn primary" id="publish">Publier <span class="badge" id="changes">0</span></button>
+  </div>
+</header>
+
+<main id="main"><div id="loading">Chargement…</div></main>
+
+<aside id="drawer">
+  <div class="d-head"><span class="label" id="d-kind">Œuvre</span><button class="icon-btn" id="d-close" title="Fermer (Échap)">×</button></div>
+  <div class="d-body" id="d-body"></div>
+  <div class="d-foot" id="d-foot"></div>
+</aside>
+
+<div class="modal" id="modal"><div class="box" id="modal-box"></div></div>
+<div id="toasts"></div>
+<input type="file" id="file-input" accept="image/*,.heic,.heif" multiple hidden>
+
+<script>
+const PAGES = {
+  d2: { label: 'Digital 2D', kind: 'years', dir: 'images/Digital2d', site: 'digital-2d.html' },
+  d3: { label: 'Digital 3D', kind: 'projects', dir: 'images/Digital3d', site: 'digital-3d.html' },
+  tr: { label: 'Traditional', kind: 'flat', dir: 'images/Traditional', site: 'traditional.html' },
+};
+const TABS = [['home', 'Accueil'], ['d2', 'Digital 2D'], ['d3', 'Digital 3D'], ['tr', 'Traditional']];
+const CAT_LABELS = { d2: 'Digital 2D', d3: 'Digital 3D', tr: 'Traditional' };
+
+let S = null;                       // { galleries, home }
+let tab = location.hash.slice(1) || localStorage.getItem('editor-tab') || 'd2';
+let selected = null;                // { key, gi, ii }
+const history = [];                 // pile d'annulation : { key, snapshot }
+const saveTimers = {}, pending = new Set();
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const url = p => '/site/' + p.split('/').map(encodeURIComponent).join('/');
+const clone = o => JSON.parse(JSON.stringify(o));
+const stem = name => name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim();
+const folderOf = p => p.slice(0, p.lastIndexOf('/'));
+
+function toast(msg, err) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' err' : '');
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), err ? 6000 : 2600);
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch('/api/' + path, opts);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Erreur serveur');
+  return d;
+}
+
+// ── Enregistrement automatique ─────────────────────────────────────────────
+function setSaveState(text, cls) { const el = $('#save-state'); el.textContent = text; el.className = cls || ''; }
+
+function commit(key, before) {
+  history.push({ key, snapshot: before });
+  if (history.length > 100) history.shift();
+  $('#undo').disabled = false;
+  scheduleSave(key);
+  render();
+}
+
+// Prend une copie avant modification puis applique `fn`
+function change(key, fn) {
+  const target = key === 'home' ? S.home : S.galleries[key];
+  const before = clone(target);
+  fn(target);
+  commit(key, before);
+}
+
+function scheduleSave(key) {
+  pending.add(key);
+  setSaveState('Enregistrement…', 'busy');
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(() => saveNow(key), 500);
+}
+
+async function saveNow(key) {
+  clearTimeout(saveTimers[key]);
+  try {
+    if (key === 'home') await api('home', { method: 'POST', body: JSON.stringify(S.home) });
+    else await api('gallery', { method: 'POST', body: JSON.stringify(S.galleries[key]) });
+    pending.delete(key);
+    if (!pending.size) setSaveState('✓ Enregistré');
+    refreshChanges();
+  } catch (e) {
+    setSaveState('⚠ Erreur', 'err');
+    toast('Enregistrement impossible : ' + e.message, true);
+  }
+}
+
+async function flushSaves() { await Promise.all([...pending].map(saveNow)); }
+
+async function refreshChanges() {
+  try { const d = await api('status'); $('#changes').textContent = d.changes.length; } catch {}
+}
+
+function undo() {
+  const h = history.pop();
+  if (!h) return;
+  if (h.key === 'home') S.home = h.snapshot; else S.galleries[h.key] = h.snapshot;
+  $('#undo').disabled = !history.length;
+  closeDrawer();
+  scheduleSave(h.key);
+  render();
+  toast('Modification annulée');
+}
+
+// ── Import d'images ─────────────────────────────────────────────────────────
+async function upload(file, dir) {
+  const q = new URLSearchParams({ dir, name: file.name });
+  const r = await fetch('/api/upload?' + q, { method: 'POST', body: file });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error);
+  return d.path;
+}
+
+function pickFiles(multiple = true) {
+  return new Promise(resolve => {
+    const input = $('#file-input');
+    input.multiple = multiple;
+    input.value = '';
+    input.onchange = () => resolve([...input.files]);
+    input.click();
+  });
+}
+
+const isImage = f => /^image\//.test(f.type) || /\.(heic|heif)$/i.test(f.name);
+
+// Ajoute des fichiers dans un groupe (année) d'une galerie
+async function addFiles(key, gi, files) {
+  files = files.filter(isImage);
+  if (!files.length) return;
+  const g = S.galleries[key], page = PAGES[key], group = g.groups[gi];
+  const year = group.year;
+
+  if (page.kind === 'projects') {
+    const name = await ask('Nouveau projet 3D', 'Nom du projet', stem(files[0].name));
+    if (!name) return;
+    const dir = `${page.dir}/${year}/${name.replace(/[\\/:*?"<>|#%]/g, '')}`;
+    setSaveState(`Import de ${files.length} image(s)…`, 'busy');
+    try {
+      const paths = [];
+      for (const f of files) paths.push(await upload(f, dir));
+      change(key, g => g.groups[gi].items.unshift({ title: name, year, src: paths[0], images: paths }));
+      toast(`Projet « ${name} » ajouté`);
+    } catch (e) { toast('Import impossible : ' + e.message, true); setSaveState('⚠ Erreur', 'err'); }
+    return;
+  }
+
+  const dir = page.kind === 'flat' ? page.dir : `${page.dir}/${year}`;
+  const before = clone(g);
+  let done = 0;
+  // tuiles temporaires pendant l'import
+  const temps = files.map(f => ({ title: stem(f.name), year, src: '', _preview: URL.createObjectURL(f), _uploading: true }));
+  group.items.unshift(...temps);
+  render();
+  setSaveState(`Import 0/${files.length}…`, 'busy');
+  for (let i = 0; i < files.length; i++) {
+    try {
+      temps[i].src = await upload(files[i], dir);
+      delete temps[i]._uploading;
+    } catch (e) {
+      toast(`${files[i].name} : ${e.message}`, true);
+      group.items.splice(group.items.indexOf(temps[i]), 1);
+    }
+    URL.revokeObjectURL(temps[i]._preview);
+    delete temps[i]._preview;
+    setSaveState(`Import ${++done}/${files.length}…`, 'busy');
+    render();
+  }
+  commit(key, before);
+  toast(`${done} image(s) ajoutée(s)`);
+}
+
+// ── Rendu ───────────────────────────────────────────────────────────────────
+function renderTabs() {
+  $('#tabs').innerHTML = TABS.map(([k, l]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('');
+  $('#view-site').href = '/site/' + (PAGES[tab] ? PAGES[tab].site : 'index.html');
+}
+
+function render() {
+  renderTabs();
+  if (!S) return;
+  if (tab === 'home') return renderHome();
+  renderGallery(tab);
+}
+
+function tileHtml(it, attrs = '') {
+  const src = it._preview || (it.src ? url(it.src) : '');
+  const multi = it.images && it.images.length > 1 ? `<span class="multi">${it.images.length} images</span>` : '';
+  return `<div class="tile${it._uploading ? ' uploading' : ''}" ${attrs}>
+    ${src ? `<img src="${esc(src)}" loading="lazy" alt="">` : ''}${multi}
+    <span class="cap">${esc(it.title)}</span>
+    ${it._uploading ? '' : '<button class="x" data-act="del" title="Retirer de la galerie">×</button>'}
+  </div>`;
+}
+
+function renderGallery(key) {
+  const g = S.galleries[key], page = PAGES[key];
+  const isFlat = page.kind === 'flat', isProj = page.kind === 'projects';
+  const total = g.groups.reduce((n, gr) => n + gr.items.length, 0);
+  const addLabel = isProj ? '+ Nouveau projet' : '+ Ajouter des images';
+  $('#main').innerHTML = `
+    <div class="page-head">
+      <h1>${page.label}</h1>
+      ${isFlat ? '' : '<button class="btn" data-act="add-year">+ Nouvelle année</button>'}
+    </div>
+    <p class="hint">${total} ${isProj ? 'projet(s)' : 'œuvre(s)'} · Glisse les vignettes pour changer l'ordre${isFlat ? '' : ' (ou les déplacer d\'une année à l\'autre)'}.
+      Glisse des fichiers depuis ton ordinateur sur ${isFlat ? 'la galerie' : 'une année'} pour les ajouter. Clique sur une image pour la modifier.</p>
+    ${g.groups.map((gr, gi) => `
+      <section class="group" data-gi="${gi}">
+        <div class="group-head">
+          ${isFlat ? '' : `<h2>${esc(gr.year)}</h2>`}
+          <span class="count">${gr.items.length}</span>
+          <span class="spacer"></span>
+          <button class="btn" data-act="add" data-gi="${gi}">${addLabel}</button>
+        </div>
+        <div class="grid" data-gi="${gi}">${gr.items.map((it, ii) => tileHtml(it, `data-gi="${gi}" data-ii="${ii}"`)).join('')}</div>
+      </section>`).join('')}`;
+
+  $('#main').querySelectorAll('.grid').forEach(grid => Sortable.create(grid, {
+    group: 'gallery-' + key, animation: 160, filter: '.x, .uploading', preventOnFilter: false,
+    onEnd(e) {
+      const from = +e.from.dataset.gi, to = +e.to.dataset.gi;
+      if (from === to && e.oldIndex === e.newIndex) return;
+      change(key, g => {
+        const [it] = g.groups[from].items.splice(e.oldIndex, 1);
+        if (from !== to && !isFlat) it.year = g.groups[to].year;
+        g.groups[to].items.splice(e.newIndex, 0, it);
+      });
+    },
+  }));
+}
+
+function renderHome() {
+  const h = S.home;
+  $('#main').innerHTML = `
+    <div class="page-head"><h1>Accueil</h1></div>
+    <p class="hint">L'image en plein écran de la page d'accueil, ta photo, et les images qui défilent au survol de chaque catégorie du menu.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>Image principale</h3>
+        <p>Affichée en grand à l'ouverture du site (et utilisée pour l'animation d'intro).</p>
+        <img class="hero-prev" src="${esc(url(h.hero))}" alt="">
+        <div class="field"><span class="label">Texte alternatif</span><input id="hero-alt" value="${esc(h.heroAlt)}"></div>
+        <button class="btn" data-act="hero">Changer l'image</button>
+      </div>
+      <div class="card">
+        <h3>Ta photo</h3>
+        <p>Utilisée dans le bloc contact de l'accueil et sur la page About.</p>
+        <img class="photo-prev" src="${esc(url(h.photo))}" alt="">
+        <div class="row">
+          <button class="btn" data-act="photo">Choisir une image du site</button>
+          <button class="btn" data-act="photo-upload">Importer une photo</button>
+        </div>
+      </div>
+    </div>
+    ${['d2', 'd3', 'tr'].map(c => `
+      <section class="group" data-cat="${c}">
+        <div class="group-head">
+          <h2>Défilement « ${CAT_LABELS[c]} »</h2>
+          <span class="count">${(h.cats[c] || []).length}</span><span class="spacer"></span>
+          <button class="btn" data-act="cat-add" data-cat="${c}">+ Ajouter</button>
+        </div>
+        <div class="grid small" data-cat="${c}">${(h.cats[c] || []).map((p, i) =>
+          tileHtml({ title: p.split('/').pop(), src: p }, `data-cat="${c}" data-ci="${i}"`)).join('')}</div>
+      </section>`).join('')}`;
+
+  $('#hero-alt').addEventListener('change', e => change('home', h => { h.heroAlt = e.target.value; }));
+  $('#main').querySelectorAll('.grid[data-cat]').forEach(grid => Sortable.create(grid, {
+    animation: 160, filter: '.x', preventOnFilter: false,
+    onEnd(e) {
+      if (e.oldIndex === e.newIndex) return;
+      change('home', h => { const l = h.cats[grid.dataset.cat]; l.splice(e.newIndex, 0, l.splice(e.oldIndex, 1)[0]); });
+    },
+  }));
+}
+
+// ── Panneau d'édition d'une œuvre ───────────────────────────────────────────
+function openDrawer(key, gi, ii) {
+  selected = { key, gi, ii };
+  renderDrawer();
+  $('#drawer').classList.add('open');
+}
+function closeDrawer() { selected = null; $('#drawer').classList.remove('open'); }
+
+function currentItem() {
+  if (!selected) return null;
+  const gr = S.galleries[selected.key].groups[selected.gi];
+  return gr && gr.items[selected.ii];
+}
+
+function renderDrawer() {
+  const it = currentItem();
+  if (!it) return closeDrawer();
+  const { key, gi } = selected, page = PAGES[key], g = S.galleries[key];
+  const isProj = page.kind === 'projects';
+  $('#d-kind').textContent = isProj ? 'Projet 3D' : page.label;
+  const years = g.groups.map(gr => gr.year);
+  const yearField = page.kind === 'flat' ? '' : `
+    <div class="field"><span class="label">Année</span>
+      <select id="d-year">${years.map(y => `<option ${y === g.groups[gi].year ? 'selected' : ''}>${esc(y)}</option>`).join('')}<option value="__new">Autre année…</option></select>
+    </div>`;
+  const projImgs = !isProj ? '' : `
+    <div class="field"><span class="label">Images du projet — ★ = vignette · glisse pour l'ordre du diaporama</span></div>
+    <div class="grid proj-grid" id="d-imgs">${it.images.map((p, i) => `
+      <div class="tile${p === it.src ? ' cover' : ''}" data-pi="${i}">
+        <img src="${esc(url(p))}" loading="lazy" alt="">
+        <button class="star" data-act="cover" title="Utiliser comme vignette">★</button>
+        <button class="x" data-act="img-del" title="Retirer">×</button>
+      </div>`).join('')}</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-act="img-add">+ Ajouter des images</button></div>`;
+
+  $('#d-body').innerHTML = `
+    ${isProj ? '' : `<img class="d-prev" src="${esc(url(it.src))}" alt="">`}
+    <div class="field"><span class="label">Titre</span><input id="d-title" value="${esc(it.title)}"></div>
+    ${yearField}
+    ${projImgs}
+    ${isProj ? '' : `<p class="hint" style="margin:0 0 12px">Fichier : ${esc(it.src)}</p><button class="btn" data-act="replace">Remplacer l'image</button>`}`;
+  $('#d-foot').innerHTML = `<button class="btn danger" data-act="item-del">Retirer de la galerie</button><button class="btn" data-act="close">Fermer</button>`;
+
+  $('#d-title').addEventListener('change', e => {
+    const v = e.target.value.trim();
+    if (v && v !== it.title) change(key, g => { g.groups[selected.gi].items[selected.ii].title = v; });
+  });
+  const ysel = $('#d-year');
+  if (ysel) ysel.addEventListener('change', async e => {
+    let y = e.target.value;
+    if (y === '__new') {
+      y = await ask('Nouvelle année', 'Année', String(new Date().getFullYear()));
+      if (!y) return renderDrawer();
+    }
+    moveToYear(key, y);
+  });
+  if (isProj) Sortable.create($('#d-imgs'), {
+    animation: 160, filter: '.x, .star', preventOnFilter: false,
+    onEnd(e) {
+      if (e.oldIndex === e.newIndex) return;
+      change(key, g => { const l = g.groups[selected.gi].items[selected.ii].images; l.splice(e.newIndex, 0, l.splice(e.oldIndex, 1)[0]); });
+      renderDrawer();
+    },
+  });
+}
+
+function ensureYear(key, year) {
+  const g = S.galleries[key];
+  let gi = g.groups.findIndex(gr => gr.year === year);
+  if (gi < 0) {
+    g.groups.push({ year, cls: ' reveal in', items: [] });
+    g.groups.sort((a, b) => String(b.year).localeCompare(String(a.year)));
+    gi = g.groups.findIndex(gr => gr.year === year);
+  }
+  return gi;
+}
+
+function moveToYear(key, year) {
+  change(key, g => {
+    const [it] = g.groups[selected.gi].items.splice(selected.ii, 1);
+    it.year = year;
+    const gi = ensureYear(key, year);
+    g.groups[gi].items.unshift(it);
+    selected = { key, gi, ii: 0 };
+  });
+  renderDrawer();
+  toast(`Déplacée en ${year}`);
+}
+
+// ── Petites fenêtres ────────────────────────────────────────────────────────
+function modal(html, wide) {
+  $('#modal-box').className = 'box' + (wide ? ' wide' : '');
+  $('#modal-box').innerHTML = html;
+  $('#modal').classList.add('open');
+}
+function closeModal() { $('#modal').classList.remove('open'); $('#modal-box').innerHTML = ''; }
+
+function ask(title, label, value = '') {
+  return new Promise(resolve => {
+    modal(`<h3>${esc(title)}</h3>
+      <div class="field" style="margin-top:14px"><span class="label">${esc(label)}</span><input id="ask-in" value="${esc(value)}"></div>
+      <div class="actions"><button class="btn ghost" id="ask-no">Annuler</button><button class="btn primary" id="ask-ok">Valider</button></div>`);
+    const input = $('#ask-in');
+    input.focus(); input.select();
+    const done = v => { closeModal(); resolve(v); };
+    $('#ask-ok').onclick = () => done(input.value.trim());
+    $('#ask-no').onclick = () => done(null);
+    input.onkeydown = e => { if (e.key === 'Enter') done(input.value.trim()); if (e.key === 'Escape') done(null); };
+  });
+}
+
+function confirmBox(title, text, okLabel = 'Confirmer') {
+  return new Promise(resolve => {
+    modal(`<h3>${esc(title)}</h3><p class="hint" style="margin:8px 0 0">${text}</p>
+      <div class="actions"><button class="btn ghost" id="c-no">Annuler</button><button class="btn primary" id="c-ok">${esc(okLabel)}</button></div>`);
+    $('#c-ok').onclick = () => { closeModal(); resolve(true); };
+    $('#c-no').onclick = () => { closeModal(); resolve(false); };
+  });
+}
+
+// Sélecteur parmi les images déjà présentes dans les galeries
+function pickFromSite(title, { multi = false, only = null } = {}) {
+  const sources = {};
+  for (const [k, g] of Object.entries(S.galleries)) {
+    const list = [];
+    g.groups.forEach(gr => gr.items.forEach(it => (it.images || [it.src]).forEach(p => { if (p && !list.includes(p)) list.push(p); })));
+    sources[k] = list;
+  }
+  let cur = only || 'd2';
+  const sel = [];
+  return new Promise(resolve => {
+    const draw = () => {
+      modal(`<h3>${esc(title)}</h3>
+        <div class="picker-tabs">${(only ? [only] : ['d2', 'd3', 'tr']).map(k =>
+          `<button class="btn ${k === cur ? '' : 'ghost'}" data-src="${k}">${CAT_LABELS[k]}</button>`).join('')}</div>
+        <div class="grid picker-grid">${sources[cur].map(p =>
+          `<div class="tile ${sel.includes(p) ? 'sel' : ''}" data-p="${esc(p)}"><img src="${esc(url(p))}" loading="lazy" alt=""></div>`).join('')}</div>
+        <div class="actions"><span class="hint" style="margin:0;flex:1">${multi ? sel.length + ' sélectionnée(s)' : 'Clique sur une image'}</span>
+          <button class="btn ghost" id="pk-no">Annuler</button>${multi ? '<button class="btn primary" id="pk-ok">Ajouter</button>' : ''}</div>`, true);
+      $('#modal-box').querySelectorAll('[data-src]').forEach(b => b.onclick = () => { cur = b.dataset.src; draw(); });
+      $('#modal-box').querySelectorAll('[data-p]').forEach(t => t.onclick = () => {
+        const p = t.dataset.p;
+        if (!multi) { closeModal(); return resolve([p]); }
+        const i = sel.indexOf(p);
+        i < 0 ? sel.push(p) : sel.splice(i, 1);
+        t.classList.toggle('sel');
+        $('#modal-box .actions .hint').textContent = sel.length + ' sélectionnée(s)';
+      });
+      $('#pk-no').onclick = () => { closeModal(); resolve([]); };
+      if (multi) $('#pk-ok').onclick = () => { closeModal(); resolve(sel); };
+    };
+    draw();
+  });
+}
+
+// ── Publication ─────────────────────────────────────────────────────────────
+async function publish() {
+  await flushSaves();
+  const st = await api('status');
+  if (!st.changes.length) return toast('Rien à publier : le site en ligne est déjà à jour.');
+  const msg = await ask('Publier sur le site', `${st.changes.length} fichier(s) modifié(s) — description (facultatif)`, 'Mise à jour du portfolio');
+  if (msg === null) return;
+  modal(`<h3>Publication…</h3><p class="hint">Envoi vers GitHub en cours.</p>`);
+  try {
+    const r = await api('publish', { method: 'POST', body: JSON.stringify({ message: msg || undefined }) });
+    modal(`<h3>${r.ok ? 'C\'est en ligne ✓' : 'La publication a échoué'}</h3>
+      <pre class="log">${esc(r.out)}</pre>
+      <div class="actions">${r.ok && S.domain ? `<a class="btn" href="https://${esc(S.domain)}" target="_blank">Ouvrir ${esc(S.domain)} ↗</a>` : ''}<button class="btn primary" onclick="closeModal()">OK</button></div>`);
+  } catch (e) {
+    modal(`<h3>La publication a échoué</h3><pre class="log">${esc(e.message)}</pre><div class="actions"><button class="btn primary" onclick="closeModal()">OK</button></div>`);
+  }
+  refreshChanges();
+}
+
+// ── Événements ──────────────────────────────────────────────────────────────
+document.addEventListener('click', async e => {
+  const tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn) { tab = tabBtn.dataset.tab; localStorage.setItem('editor-tab', tab); closeDrawer(); window.scrollTo(0, 0); return render(); }
+
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  const tile = e.target.closest('.tile');
+
+  // Galeries
+  if (PAGES[tab] && e.target.closest('#main')) {
+    if (act === 'add') return addFiles(tab, +e.target.closest('[data-act]').dataset.gi, await pickFiles());
+    if (act === 'add-year') {
+      const y = await ask('Nouvelle année', 'Année', String(new Date().getFullYear()));
+      if (!y) return;
+      if (S.galleries[tab].groups.some(g => g.year === y)) return toast(`${y} existe déjà`);
+      const before = clone(S.galleries[tab]);
+      ensureYear(tab, y);
+      history.push({ key: tab, snapshot: before }); $('#undo').disabled = false;
+      render();
+      toast(`Année ${y} créée — ajoute-lui des images (elle n'apparaît sur le site qu'une fois remplie)`);
+      return;
+    }
+    if (tile && tile.dataset.ii !== undefined && !tile.classList.contains('uploading')) {
+      const gi = +tile.dataset.gi, ii = +tile.dataset.ii;
+      if (act === 'del') {
+        const it = S.galleries[tab].groups[gi].items[ii];
+        change(tab, g => { g.groups[gi].items.splice(ii, 1); });
+        closeDrawer();
+        return toast(`« ${it.title} » retirée (Ctrl+Z pour annuler)`);
+      }
+      return openDrawer(tab, gi, ii);
+    }
+  }
+
+  // Accueil
+  if (tab === 'home' && e.target.closest('#main')) {
+    if (act === 'hero') {
+      const [p] = await pickFromSite('Image principale de l\'accueil');
+      if (p) change('home', h => { h.hero = p; });
+    }
+    if (act === 'photo') {
+      const [p] = await pickFromSite('Ta photo');
+      if (p) change('home', h => { h.photo = p; });
+    }
+    if (act === 'photo-upload') {
+      const [f] = await pickFiles(false);
+      if (!f) return;
+      try { const p = await upload(f, 'images/photo-about'); change('home', h => { h.photo = p; }); }
+      catch (err) { toast(err.message, true); }
+    }
+    if (act === 'cat-add') {
+      const c = e.target.closest('[data-cat]').dataset.cat;
+      const ps = await pickFromSite(`Défilement « ${CAT_LABELS[c]} »`, { multi: true, only: c });
+      if (ps.length) change('home', h => { h.cats[c] = [...(h.cats[c] || []), ...ps]; });
+    }
+    if (act === 'del' && tile) change('home', h => { h.cats[tile.dataset.cat].splice(+tile.dataset.ci, 1); });
+    return;
+  }
+
+  // Panneau latéral
+  if (e.target.closest('#drawer') && selected) {
+    const { key } = selected;
+    const it = currentItem();
+    if (act === 'close') return closeDrawer();
+    if (act === 'item-del') {
+      change(key, g => { g.groups[selected.gi].items.splice(selected.ii, 1); });
+      closeDrawer();
+      return toast(`« ${it.title} » retirée (Ctrl+Z pour annuler)`);
+    }
+    if (act === 'replace') {
+      const [f] = await pickFiles(false);
+      if (!f) return;
+      setSaveState('Import…', 'busy');
+      try {
+        const p = await upload(f, folderOf(it.src));
+        change(key, g => { g.groups[selected.gi].items[selected.ii].src = p; });
+        renderDrawer();
+        toast('Image remplacée');
+      } catch (err) { toast(err.message, true); }
+    }
+    if (act === 'img-add') {
+      const files = (await pickFiles()).filter(isImage);
+      if (!files.length) return;
+      setSaveState('Import…', 'busy');
+      try {
+        const dir = folderOf(it.src);
+        const paths = [];
+        for (const f of files) paths.push(await upload(f, dir));
+        change(key, g => { g.groups[selected.gi].items[selected.ii].images.push(...paths); });
+        renderDrawer();
+      } catch (err) { toast(err.message, true); }
+    }
+    const pt = e.target.closest('[data-pi]');
+    if (pt && act === 'cover') {
+      change(key, g => { const x = g.groups[selected.gi].items[selected.ii]; x.src = x.images[+pt.dataset.pi]; });
+      renderDrawer();
+    }
+    if (pt && act === 'img-del') {
+      if (it.images.length === 1) return toast('Un projet doit garder au moins une image');
+      change(key, g => {
+        const x = g.groups[selected.gi].items[selected.ii];
+        const [gone] = x.images.splice(+pt.dataset.pi, 1);
+        if (x.src === gone) x.src = x.images[0];
+      });
+      renderDrawer();
+    }
+  }
+});
+
+$('#d-close').onclick = closeDrawer;
+$('#undo').onclick = undo;
+$('#publish').onclick = publish;
+$('#modal').addEventListener('mousedown', e => { if (e.target.id === 'modal') closeModal(); });
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.target.matches('input')) { e.preventDefault(); undo(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); flushSaves(); }
+  if (e.key === 'Escape') { if ($('#modal').classList.contains('open')) closeModal(); else closeDrawer(); }
+});
+
+// Glisser-déposer de fichiers depuis l'ordinateur
+let dropTarget = null;
+const fileDrag = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+document.addEventListener('dragover', e => {
+  if (!fileDrag(e)) return;
+  e.preventDefault();
+  const g = PAGES[tab] && e.target.closest('.group[data-gi]');
+  if (g !== dropTarget) { dropTarget?.classList.remove('drop'); dropTarget = g; g?.classList.add('drop'); }
+  e.dataTransfer.dropEffect = g ? 'copy' : 'none';
+});
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) { dropTarget?.classList.remove('drop'); dropTarget = null; } });
+document.addEventListener('drop', e => {
+  if (!fileDrag(e)) return;
+  e.preventDefault();
+  dropTarget?.classList.remove('drop');
+  const g = dropTarget; dropTarget = null;
+  if (g) addFiles(tab, +g.dataset.gi, [...e.dataTransfer.files]);
+});
+
+window.addEventListener('beforeunload', e => { if (pending.size) { flushSaves(); e.preventDefault(); } });
+
+(async function init() {
+  if (tab !== 'home' && !PAGES[tab]) tab = 'd2';
+  renderTabs();
+  try {
+    S = await api('state');
+    $('#changes').textContent = S.changes;
+    render();
+  } catch (e) {
+    $('#main').innerHTML = `<div id="loading">Impossible de charger le site : ${esc(e.message)}</div>`;
+  }
+})();
+</script>
+</body>
+</html>
