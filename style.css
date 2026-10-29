@@ -74,7 +74,7 @@ footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;paddin
 .thumb-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding-bottom:32px}
 
 .thumb{position:relative;aspect-ratio:3/4;overflow:hidden;cursor:pointer;background:var(--surface)}
-.thumb-img{position:absolute;inset:0;background-size:cover;background-position:center top;transition:transform .4s ease}
+.thumb-img{position:absolute;inset:0;background-size:cover;background-position:var(--pos,center top);scale:var(--zoom,1);transform-origin:var(--pos,center top);transition:transform .4s ease}  /* --pos / --zoom : cadrage réglé dans l'éditeur */
 .thumb:hover .thumb-img{transform:scale(1.03)}
 .thumb-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface)}
 .thumb-ph-num{color:#bbb;font-size:.9rem}
@@ -381,3 +381,11 @@ html.vt body>*{animation:none!important}
 
 /* téléphone, accueil : Lia cadrée sur le visage, le bras et le papillon */
 @media(max-width:768px){#stage>img[src$="Lia.jpg"]{object-position:12% 50%}}
+
+/* Digital 2D + Visual Exploration : regroupés, puis un espace avant 3D et Traditional */
+.s-menu .s-group{gap:30px}
+.s-sub{display:flex;flex-direction:column;gap:6px}
+@media(max-width:768px){
+  .has-side .s-sub{display:contents}
+  .has-side #side.open .s-sub{display:flex;flex-direction:column;align-items:center;gap:10px}
+}
